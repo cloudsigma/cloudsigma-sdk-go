@@ -20,7 +20,7 @@ func TestServers_AttachDrive(t *testing.T) {
 	}
 	mux.HandleFunc("/servers/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		v := new(AttachDriveRequest)
-		json.NewDecoder(r.Body).Decode(v)
+		_ = json.NewDecoder(r.Body).Decode(v)
 		assert.Equal(t, input, v)
 
 		assert.Equal(t, "PUT", r.Method)
@@ -78,7 +78,7 @@ func TestServers_Create(t *testing.T) {
 	}
 	mux.HandleFunc("/servers/", func(w http.ResponseWriter, r *http.Request) {
 		v := new(ServerCreateRequest)
-		json.NewDecoder(r.Body).Decode(v)
+		_ = json.NewDecoder(r.Body).Decode(v)
 		assert.Equal(t, input, v)
 
 		assert.Equal(t, "POST", r.Method)

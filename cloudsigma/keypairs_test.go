@@ -20,7 +20,7 @@ func TestKeypairs_Create(t *testing.T) {
 	}
 	mux.HandleFunc("/keypairs/", func(w http.ResponseWriter, r *http.Request) {
 		v := new(KeypairCreateRequest)
-		json.NewDecoder(r.Body).Decode(v)
+		_ = json.NewDecoder(r.Body).Decode(v)
 		assert.Equal(t, input, v)
 
 		assert.Equal(t, "POST", r.Method)

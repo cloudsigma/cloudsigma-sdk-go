@@ -106,7 +106,7 @@ func TestClient_Do(t *testing.T) {
 	req, _ := client.NewRequest("GET", ".", nil)
 	body := new(foo)
 
-	client.Do(context.Background(), req, body)
+	_, _ = client.Do(context.Background(), req, body)
 	expected := &foo{"a"}
 
 	assert.Equal(t, body, expected)
