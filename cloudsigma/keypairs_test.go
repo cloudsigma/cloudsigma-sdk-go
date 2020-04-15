@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ func TestKeypairs_Create(t *testing.T) {
 		PublicKey: "long-long-public-key",
 	}
 
-	keypair, _, err := client.Keypairs.Create(input)
+	keypair, _, err := client.Keypairs.Create(context.Background(), input)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, keypair)
@@ -41,7 +42,7 @@ func TestKeypairs_Create_emptyPayload(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Keypairs.Create(nil)
+	_, _, err := client.Keypairs.Create(context.Background(), nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
@@ -54,7 +55,7 @@ func TestKeypairs_Delete(t *testing.T) {
 		assert.Equal(t, "DELETE", r.Method)
 	})
 
-	_, err := client.Keypairs.Delete("long-uuid")
+	_, err := client.Keypairs.Delete(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 }
@@ -63,7 +64,7 @@ func TestKeypairs_Delete_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, err := client.Keypairs.Delete("")
+	_, err := client.Keypairs.Delete(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -73,7 +74,7 @@ func TestKeypairs_Delete_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, err := client.Keypairs.Delete("%")
+	_, err := client.Keypairs.Delete(context.Background(), "%")
 
 	assert.Error(t, err)
 }
@@ -91,7 +92,7 @@ func TestKeypairs_Get(t *testing.T) {
 		UUID: "long-uuid",
 	}
 
-	keypair, _, err := client.Keypairs.Get("long-uuid")
+	keypair, _, err := client.Keypairs.Get(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, keypair)
@@ -101,7 +102,7 @@ func TestKeypairs_Get_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Keypairs.Get("")
+	_, _, err := client.Keypairs.Get(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -111,7 +112,7 @@ func TestKeypairs_Get_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Keypairs.Get("%")
+	_, _, err := client.Keypairs.Get(context.Background(), "%")
 
 	assert.Error(t, err)
 }

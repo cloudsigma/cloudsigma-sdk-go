@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
@@ -23,7 +24,7 @@ type IP struct {
 // Get provides detailed information for IP address identified by uuid.
 //
 // CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/networking.html#get-single-ip
-func (s *IPsService) Get(uuid string) (*IP, *http.Response, error) {
+func (s *IPsService) Get(ctx context.Context, uuid string) (*IP, *http.Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -36,7 +37,7 @@ func (s *IPsService) Get(uuid string) (*IP, *http.Response, error) {
 	}
 
 	ip := new(IP)
-	resp, err := s.client.Do(req, ip)
+	resp, err := s.client.Do(ctx, req, ip)
 	if err != nil {
 		return nil, resp, err
 	}

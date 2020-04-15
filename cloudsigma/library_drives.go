@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -34,7 +35,7 @@ type LibraryDrive struct {
 // Get provides detailed information for library drive identified by uuid.
 //
 // CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#list-single-drive
-func (s *LibraryDrivesService) Get(uuid string) (*LibraryDrive, *http.Response, error) {
+func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDrive, *http.Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -47,7 +48,7 @@ func (s *LibraryDrivesService) Get(uuid string) (*LibraryDrive, *http.Response, 
 	}
 
 	libdrive := new(LibraryDrive)
-	resp, err := s.client.Do(req, libdrive)
+	resp, err := s.client.Do(ctx, req, libdrive)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -59,7 +60,7 @@ func (s *LibraryDrivesService) Get(uuid string) (*LibraryDrive, *http.Response, 
 // definition can be omitted. Size of the cloned drive can only be bigger or the same.
 //
 // CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#cloning-library-drive
-func (s *LibraryDrivesService) Clone(uuid string, driveCloneRequest *DriveCloneRequest) (*Drive, *http.Response, error) {
+func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, driveCloneRequest *DriveCloneRequest) (*Drive, *http.Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -75,7 +76,7 @@ func (s *LibraryDrivesService) Clone(uuid string, driveCloneRequest *DriveCloneR
 	}
 
 	root := new(drivesRoot)
-	resp, err := s.client.Do(req, root)
+	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}

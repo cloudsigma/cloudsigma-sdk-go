@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -22,7 +23,7 @@ func TestLibraryDrives_Clone(t *testing.T) {
 		UUID: "generated-uuid",
 	}
 
-	drive, _, err := client.LibraryDrives.Clone("long-uuid", &DriveCloneRequest{})
+	drive, _, err := client.LibraryDrives.Clone(context.Background(), "long-uuid", &DriveCloneRequest{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drive)
@@ -32,7 +33,7 @@ func TestLibraryDrives_Clone_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.LibraryDrives.Clone("", &DriveCloneRequest{})
+	_, _, err := client.LibraryDrives.Clone(context.Background(), "", &DriveCloneRequest{})
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -42,7 +43,7 @@ func TestLibraryDrives_Clone_emptyPayload(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.LibraryDrives.Clone("long-uuid", nil)
+	_, _, err := client.LibraryDrives.Clone(context.Background(), "long-uuid", nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
@@ -52,7 +53,7 @@ func TestLibraryDrives_Clone_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.LibraryDrives.Clone("%", &DriveCloneRequest{})
+	_, _, err := client.LibraryDrives.Clone(context.Background(), "%", &DriveCloneRequest{})
 
 	assert.Error(t, err)
 }
@@ -70,7 +71,7 @@ func TestLibraryDrives_Get(t *testing.T) {
 		Name: "long-uuid",
 	}
 
-	libdrive, _, err := client.LibraryDrives.Get("long-uuid")
+	libdrive, _, err := client.LibraryDrives.Get(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, libdrive)
@@ -80,7 +81,7 @@ func TestLibraryDrives_Get_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.LibraryDrives.Get("")
+	_, _, err := client.LibraryDrives.Get(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -90,7 +91,7 @@ func TestLibraryDrives_Get_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.LibraryDrives.Get("%")
+	_, _, err := client.LibraryDrives.Get(context.Background(), "%")
 
 	assert.Error(t, err)
 }

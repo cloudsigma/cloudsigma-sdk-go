@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -21,7 +22,7 @@ func TestIPs_Get(t *testing.T) {
 		UUID:    "long-uuid",
 	}
 
-	ip, _, err := client.IPs.Get("long-uuid")
+	ip, _, err := client.IPs.Get(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ip)
@@ -31,7 +32,7 @@ func TestIPs_Get_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.IPs.Get("")
+	_, _, err := client.IPs.Get(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -41,7 +42,7 @@ func TestIPs_Get_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.IPs.Get("%")
+	_, _, err := client.IPs.Get(context.Background(), "%")
 
 	assert.Error(t, err)
 }

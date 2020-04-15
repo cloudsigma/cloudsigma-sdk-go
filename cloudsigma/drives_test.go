@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -22,7 +23,7 @@ func TestDrives_Get(t *testing.T) {
 		UUID: "long-uuid",
 	}
 
-	drive, _, err := client.Drives.Get("long-uuid")
+	drive, _, err := client.Drives.Get(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drive)
@@ -32,7 +33,7 @@ func TestDrives_Get_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Drives.Get("")
+	_, _, err := client.Drives.Get(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -42,7 +43,7 @@ func TestDrives_Get_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Drives.Get("%")
+	_, _, err := client.Drives.Get(context.Background(), "%")
 
 	assert.Error(t, err)
 }

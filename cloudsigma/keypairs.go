@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ type KeypairCreateRequest struct {
 // Get provides information for keypair identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
-func (s *KeypairsService) Get(uuid string) (*Keypair, *http.Response, error) {
+func (s *KeypairsService) Get(ctx context.Context, uuid string) (*Keypair, *http.Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -44,7 +45,7 @@ func (s *KeypairsService) Get(uuid string) (*Keypair, *http.Response, error) {
 	}
 
 	keypair := new(Keypair)
-	resp, err := s.client.Do(req, keypair)
+	resp, err := s.client.Do(ctx, req, keypair)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -55,7 +56,7 @@ func (s *KeypairsService) Get(uuid string) (*Keypair, *http.Response, error) {
 // Create makes a keypair.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
-func (s *KeypairsService) Create(keypairCreateRequest *KeypairCreateRequest) (*Keypair, *http.Response, error) {
+func (s *KeypairsService) Create(ctx context.Context, keypairCreateRequest *KeypairCreateRequest) (*Keypair, *http.Response, error) {
 	if keypairCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
@@ -68,7 +69,7 @@ func (s *KeypairsService) Create(keypairCreateRequest *KeypairCreateRequest) (*K
 	}
 
 	root := new(KeypairCreateRequest)
-	resp, err := s.client.Do(req, root)
+	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -83,7 +84,7 @@ func (s *KeypairsService) Create(keypairCreateRequest *KeypairCreateRequest) (*K
 // Delete removes the keypair identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
-func (s *KeypairsService) Delete(uuid string) (*http.Response, error) {
+func (s *KeypairsService) Delete(ctx context.Context, uuid string) (*http.Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
 	}
@@ -95,5 +96,5 @@ func (s *KeypairsService) Delete(uuid string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return s.client.Do(req, nil)
+	return s.client.Do(ctx, req, nil)
 }

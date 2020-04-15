@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -103,7 +104,7 @@ type serversRoot struct {
 // Get provides detailed information for server identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#server-runtime-and-server-details
-func (s *ServersService) Get(uuid string) (*Server, *http.Response, error) {
+func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *http.Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -116,7 +117,7 @@ func (s *ServersService) Get(uuid string) (*Server, *http.Response, error) {
 	}
 
 	server := new(Server)
-	resp, err := s.client.Do(req, server)
+	resp, err := s.client.Do(ctx, req, server)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -127,7 +128,7 @@ func (s *ServersService) Get(uuid string) (*Server, *http.Response, error) {
 // Create makes a new virtual server with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#creating
-func (s *ServersService) Create(serverCreateRequest *ServerCreateRequest) (*Server, *http.Response, error) {
+func (s *ServersService) Create(ctx context.Context, serverCreateRequest *ServerCreateRequest) (*Server, *http.Response, error) {
 	if serverCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
@@ -140,7 +141,7 @@ func (s *ServersService) Create(serverCreateRequest *ServerCreateRequest) (*Serv
 	}
 
 	root := new(serversRoot)
-	resp, err := s.client.Do(req, root)
+	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -154,8 +155,8 @@ func (s *ServersService) Create(serverCreateRequest *ServerCreateRequest) (*Serv
 
 // Delete removes a server together with it's all attached drives (recursive delete).
 //
-//CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#delete-server-together-with-attached-drives-recursive-delete
-func (s *ServersService) Delete(uuid string) (*http.Response, error) {
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#delete-server-together-with-attached-drives-recursive-delete
+func (s *ServersService) Delete(ctx context.Context, uuid string) (*http.Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
 	}
@@ -167,13 +168,13 @@ func (s *ServersService) Delete(uuid string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return s.client.Do(req, nil)
+	return s.client.Do(ctx, req, nil)
 }
 
 // ServerDrive edits a server with attaching drives to it.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#attach-a-drive
-func (s *ServersService) AttachDrive(serverUUID string, attachDriveRequest *AttachDriveRequest) (*Server, *http.Response, error) {
+func (s *ServersService) AttachDrive(ctx context.Context, serverUUID string, attachDriveRequest *AttachDriveRequest) (*Server, *http.Response, error) {
 	if serverUUID == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -189,7 +190,7 @@ func (s *ServersService) AttachDrive(serverUUID string, attachDriveRequest *Atta
 	}
 
 	serverWithDrives := new(Server)
-	resp, err := s.client.Do(req, serverWithDrives)
+	resp, err := s.client.Do(ctx, req, serverWithDrives)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -200,25 +201,25 @@ func (s *ServersService) AttachDrive(serverUUID string, attachDriveRequest *Atta
 // Start starts a server with specific UUID.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#start
-func (s *ServersService) Start(uuid string) (*ServerAction, *http.Response, error) {
-	return s.doAction(uuid, "start")
+func (s *ServersService) Start(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+	return s.doAction(ctx, uuid, "start")
 }
 
 // Stop stops a server with specific UUID. This action is equivalent to pulling the power cord of a physical server.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#stop
-func (s *ServersService) Stop(uuid string) (*ServerAction, *http.Response, error) {
-	return s.doAction(uuid, "stop")
+func (s *ServersService) Stop(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+	return s.doAction(ctx, uuid, "stop")
 }
 
 // Stop Sends an ACPI shutdowns to a server with specific UUID for a minute.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#acpi-shutdown
-func (s *ServersService) Shutdown(uuid string) (*ServerAction, *http.Response, error) {
-	return s.doAction(uuid, "shutdown")
+func (s *ServersService) Shutdown(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+	return s.doAction(ctx, uuid, "shutdown")
 }
 
-func (s *ServersService) doAction(uuid, action string) (*ServerAction, *http.Response, error) {
+func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*ServerAction, *http.Response, error) {
 	if uuid == "" || action == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -231,7 +232,7 @@ func (s *ServersService) doAction(uuid, action string) (*ServerAction, *http.Res
 	}
 
 	serverAction := new(ServerAction)
-	resp, err := s.client.Do(req, serverAction)
+	resp, err := s.client.Do(ctx, req, serverAction)
 	if err != nil {
 		return nil, resp, err
 	}

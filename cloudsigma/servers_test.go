@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ func TestServers_AttachDrive(t *testing.T) {
 		Memory: 200,
 	}
 
-	server, _, err := client.Servers.AttachDrive("long-uuid", input)
+	server, _, err := client.Servers.AttachDrive(context.Background(), "long-uuid", input)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, server)
@@ -41,7 +42,7 @@ func TestServers_AttachDrive_emptyPayload(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.AttachDrive("long-uuid", nil)
+	_, _, err := client.Servers.AttachDrive(context.Background(), "long-uuid", nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
@@ -52,7 +53,7 @@ func TestServers_AttachDrive_emptyServerUUID(t *testing.T) {
 	defer teardown()
 	attachDriveRequest := &AttachDriveRequest{}
 
-	_, _, err := client.Servers.AttachDrive("", attachDriveRequest)
+	_, _, err := client.Servers.AttachDrive(context.Background(), "", attachDriveRequest)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -63,7 +64,7 @@ func TestServers_AttachDrive_invalidUUID(t *testing.T) {
 	defer teardown()
 	attachDriveRequest := &AttachDriveRequest{}
 
-	_, _, err := client.Servers.AttachDrive("%s", attachDriveRequest)
+	_, _, err := client.Servers.AttachDrive(context.Background(), "%s", attachDriveRequest)
 
 	assert.Error(t, err)
 }
@@ -89,7 +90,7 @@ func TestServers_Create(t *testing.T) {
 		Memory: 300,
 	}
 
-	server, _, err := client.Servers.Create(input)
+	server, _, err := client.Servers.Create(context.Background(), input)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, server)
@@ -99,7 +100,7 @@ func TestServers_Create_emptyPayload(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Create(nil)
+	_, _, err := client.Servers.Create(context.Background(), nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
@@ -112,7 +113,7 @@ func TestServers_Delete(t *testing.T) {
 		assert.Equal(t, "DELETE", r.Method)
 	})
 
-	_, err := client.Servers.Delete("long-uuid")
+	_, err := client.Servers.Delete(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 }
@@ -121,7 +122,7 @@ func TestServers_Delete_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, err := client.Servers.Delete("")
+	_, err := client.Servers.Delete(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -131,7 +132,7 @@ func TestServers_Delete_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, err := client.Servers.Delete("%")
+	_, err := client.Servers.Delete(context.Background(), "%")
 
 	assert.Error(t, err)
 }
@@ -144,7 +145,7 @@ func TestServers_doAction(t *testing.T) {
 		fmt.Fprint(w, `{"action":"start","result":"server is starting","uuid":"uuid"}`)
 	})
 
-	_, _, err := client.Servers.doAction("long-uuid", "start")
+	_, _, err := client.Servers.doAction(context.Background(), "long-uuid", "start")
 
 	assert.NoError(t, err)
 }
@@ -153,7 +154,7 @@ func TestServers_doAction_emptyAction(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.doAction("long-uuid", "")
+	_, _, err := client.Servers.doAction(context.Background(), "long-uuid", "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -163,7 +164,7 @@ func TestServers_doAction_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.doAction("%", "start")
+	_, _, err := client.Servers.doAction(context.Background(), "%", "start")
 
 	assert.Error(t, err)
 }
@@ -184,7 +185,7 @@ func TestServers_Get(t *testing.T) {
 		UUID:        "long-uuid",
 	}
 
-	server, _, err := client.Servers.Get("long-uuid")
+	server, _, err := client.Servers.Get(context.Background(), "long-uuid")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, server)
@@ -194,7 +195,7 @@ func TestServers_Get_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Get("")
+	_, _, err := client.Servers.Get(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -204,7 +205,7 @@ func TestServers_Get_invalidUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Get("%")
+	_, _, err := client.Servers.Get(context.Background(), "%")
 
 	assert.Error(t, err)
 }
@@ -213,7 +214,7 @@ func TestServers_Start_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Start("")
+	_, _, err := client.Servers.Start(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -223,7 +224,7 @@ func TestServers_Stop_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Stop("")
+	_, _, err := client.Servers.Stop(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
@@ -233,7 +234,7 @@ func TestServers_Shutdown_emptyUUID(t *testing.T) {
 	client, _, _, teardown := setup()
 	defer teardown()
 
-	_, _, err := client.Servers.Shutdown("")
+	_, _, err := client.Servers.Shutdown(context.Background(), "")
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
