@@ -5,7 +5,7 @@ os: linux
 go:
   - "1.13.x"
   - "1.14.x"
-  - tip
+  - master
 
 cache:
   directories:
@@ -14,9 +14,6 @@ cache:
 jobs:
   fast_finish: true
   allow_failures:
-    - go: tip
-  include:
-    - name: "Lint"
-      script: make tools lint
-    - name: "Test"
-      script: make test
+    - go: master
+
+script: make tools lint test
