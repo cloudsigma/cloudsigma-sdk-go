@@ -81,6 +81,27 @@ func (s *KeypairsService) Create(ctx context.Context, keypairCreateRequest *Keyp
 	return &root.Keypairs[0], resp, err
 }
 
+func (s *KeypairsService) Update(ctx context.Context, keypair *Keypair) (*Keypair, *http.Response, error) {
+	if keypair == nil {
+		return nil, nil, ErrEmptyPayloadNotAllowed
+	}
+
+	path := fmt.Sprintf("%v/%v/", keypairsBasePath, keypair.UUID)
+
+	req, err := s.client.NewRequest(http.MethodPut, path, keypair)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(Keypair)
+	resp, err := s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return root, resp, err
+}
+
 // Delete removes the keypair identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
