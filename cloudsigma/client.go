@@ -15,7 +15,7 @@ import (
 const (
 	defaultLocation = "zrh"
 	defaultBaseURL  = "https://%s.cloudsigma.com/api/2.0/"
-	userAgent       = "docker-machine-driver-cloudsigma"
+	userAgent       = "cloudsigma-sdk-go"
 
 	mediaType = "application/json"
 )
@@ -97,9 +97,10 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	}
 
 	req.SetBasicAuth(c.Username, c.Password)
-	req.Header.Set("Content-Type", mediaType)
 	req.Header.Set("Accept", mediaType)
+	req.Header.Set("Content-Type", mediaType)
 	req.Header.Set("User-Agent", c.UserAgent)
+
 	return req, nil
 }
 
