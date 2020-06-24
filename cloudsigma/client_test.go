@@ -8,34 +8,124 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// Basic authorization header for username: "user" and password: "password"
-const authorizationHeader = "Basic dXNlcjpwYXNzd29yZA=="
+var (
+	mux    *http.ServeMux
+	ctx    = context.TODO()
+	client *Client
+	server *httptest.Server
+)
 
-func setup() (client *Client, mux *http.ServeMux, serverURL string, teardown func()) {
+func setup() {
 	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
 
-	apiHandler := http.NewServeMux()
-	apiHandler.Handle("/api/2.0/", http.StripPrefix("/api/2.0", mux))
-	apiHandler.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(os.Stderr, "FAIL: Client.BaseURL path prefix is not preserved in the request URL:")
-		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "\t"+req.URL.String())
-		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "\tDid you accidentally use an absolute endpoint URL rather then relative?")
-		http.Error(w, "client.BaseURL path prefix is not preserved in the request URL.", http.StatusInternalServerError)
-	})
-	server := httptest.NewServer(apiHandler)
 	client = NewBasicAuthClient("user", "password")
-	client.BaseURL, _ = url.Parse(server.URL + "/api/2.0/")
+	client.BaseURL, _ = url.Parse(server.URL + "/")
+}
 
-	return client, mux, server.URL, server.Close
+func teardown() {
+	server.Close()
+}
+
+func TestClient_NewBasicAuthClient(t *testing.T) {
+	setup()
+	defer teardown()
+
+	assert.NotNil(t, client.BaseURL)
+	assert.Equal(t, server.URL+"/", client.BaseURL.String())
+	assert.Equal(t, "user", client.Username)
+	assert.Equal(t, "password", client.Password)
+}
+
+func TestClient_SetLocationForBaseURL_customLocation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetLocationForBaseURL("wdc")
+
+	assert.Equal(t, "https://wdc.cloudsigma.com/api/2.0/", client.BaseURL.String())
+}
+
+func TestClient_SetLocationForBaseURL_emptyLocation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetLocationForBaseURL("")
+
+	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/", client.BaseURL.String())
+}
+
+func TestClient_NewRequest(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.BaseURL, _ = url.Parse("https://zrh.cloudsigma.com/api/2.0/")
+	req, err := client.NewRequest("GET", "ips/uuid", nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/ips/uuid", req.URL.String())
+}
+
+func TestClient_NewRequest_baseURLWithoutTrailingSlash(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.BaseURL, _ = url.Parse("https://zrh.cloudsigma.com/api/2.0")
+	_, err := client.NewRequest("GET", "ips/uuid", nil)
+
+	assert.Error(t, err)
+}
+
+func TestClient_NewRequest_invalidRequestURL(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.BaseURL, _ = url.Parse("/")
+	_, err := client.NewRequest("GET", ":%31", nil)
+
+	assert.Error(t, err)
+}
+
+func TestClient_Do(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method)
+		_, _ = fmt.Fprint(w, `{"A":"a"}`)
+	})
+	req, _ := client.NewRequest("GET", ".", nil)
+	type foo struct {
+		A string
+	}
+	body := new(foo)
+
+	_, err := client.Do(ctx, req, body)
+	expected := &foo{"a"}
+
+	assert.NoError(t, err)
+	assert.Equal(t, body, expected)
+}
+
+func TestClient_Do_httpError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	})
+	req, _ := client.NewRequest("GET", ".", nil)
+
+	resp, err := client.Do(ctx, req, nil)
+
+	assert.Error(t, err)
+	assert.Equal(t, 400, resp.StatusCode)
 }
 
 func TestClient_CheckResponse_errorElements(t *testing.T) {
@@ -91,87 +181,4 @@ func TestClient_CheckResponse_noErrorStatusCode(t *testing.T) {
 	err := CheckResponse(resp)
 
 	assert.NoError(t, err)
-}
-
-func TestClient_Do(t *testing.T) {
-	client, mux, _, teardown := setup()
-	defer teardown()
-	type foo struct {
-		A string
-	}
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method)
-		fmt.Fprint(w, `{"A":"a"}`)
-	})
-	req, _ := client.NewRequest("GET", ".", nil)
-	body := new(foo)
-
-	_, _ = client.Do(context.Background(), req, body)
-	expected := &foo{"a"}
-
-	assert.Equal(t, body, expected)
-}
-
-func TestClient_Do_httpError(t *testing.T) {
-	client, mux, _, teardown := setup()
-	defer teardown()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-	})
-	req, _ := client.NewRequest("GET", ".", nil)
-
-	resp, err := client.Do(context.Background(), req, nil)
-
-	assert.Error(t, err)
-	assert.Equal(t, 400, resp.StatusCode)
-}
-
-func TestClient_NewBasicAuthClient(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-
-	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/", client.BaseURL.String())
-	assert.Equal(t, "docker-machine-driver-cloudsigma", client.UserAgent)
-}
-
-func TestClient_NewRequest(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-
-	req, err := client.NewRequest("GET", "ips/uuid", nil)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/ips/uuid", req.URL.String())
-}
-
-func TestClient_NewRequest_baseURLWithoutTrailingSlash(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-	client.BaseURL, _ = url.Parse("https://zrh.cloudsigma.com/api/2.0")
-
-	_, err := client.NewRequest("GET", "ips/uuid", nil)
-
-	assert.Error(t, err)
-}
-
-func TestClient_NewRequest_invalidRequestURL(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-	client.BaseURL, _ = url.Parse("/")
-
-	_, err := client.NewRequest("GET", ":%31", nil)
-
-	assert.Error(t, err)
-}
-
-func TestClient_SetLocationForBaseURL_customLocation(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-
-	client.SetLocationForBaseURL("wdc")
-
-	assert.Equal(t, "https://wdc.cloudsigma.com/api/2.0/", client.BaseURL.String())
-}
-
-func TestClient_SetLocationForBaseURL_emptyLocation(t *testing.T) {
-	client := NewBasicAuthClient("user", "password")
-
-	client.SetLocationForBaseURL("")
-
-	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/", client.BaseURL.String())
 }
