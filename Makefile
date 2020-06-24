@@ -31,7 +31,7 @@ lint:
 test:
 	@echo "==> Running tests..."
 	@mkdir -p $(BUILD_DIR)
-	@go test -v -cover -coverprofile=$(BUILD_DIR)/coverage.out ./...
+	@go test -count=1 -v -cover -coverprofile=$(BUILD_DIR)/coverage.out ./...
 
 
 ## build: Compile packages and dependencies.
