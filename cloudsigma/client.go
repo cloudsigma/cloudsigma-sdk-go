@@ -14,18 +14,18 @@ import (
 
 const (
 	defaultLocation = "zrh"
-	defaultBaseURL  = "https://%s.cloudsigma.com/api/2.0/"
-	userAgent       = "cloudsigma-sdk-go"
 
+	baseURL   = "https://%s.cloudsigma.com/api/2.0/"
 	mediaType = "application/json"
+	userAgent = "cloudsigma-sdk-go"
 )
 
 // A Client manages communication with the CloudSigma API.
 type Client struct {
 	client *http.Client // HTTP client used to communicate with the API.
 
-	BaseURL   *url.URL // Base URL for API requests. BaseURL should always be specified with a trailing slash.
-	UserAgent string   // User agent used when communicating with the CloudSigma API.
+	APIEndpoint *url.URL // Endpoint for API requests. APIEndpoint should always be specified with a trailing slash.
+	UserAgent   string   // User agent used when communicating with the CloudSigma API.
 
 	Username string // Username for CloudSigma API (user email).
 	Password string // Password for CloudSigma API.
@@ -51,7 +51,7 @@ func NewBasicAuthClient(username, password string) *Client {
 	httpClient := http.DefaultClient
 
 	c := &Client{client: httpClient, UserAgent: userAgent, Username: username, Password: password}
-	c.SetLocationForBaseURL("")
+	c.SetLocation(defaultLocation)
 	c.common.client = c
 	c.Drives = (*DrivesService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
@@ -63,26 +63,22 @@ func NewBasicAuthClient(username, password string) *Client {
 	return c
 }
 
-// SetLocationForBaseURL configures location (a sub-domain) for API endpoint. If location is empty, then default
-// location 'zrh' (Zurich, Switzerland) will be used.
+// SetLocation configures location (a sub-domain) for API endpoint.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
-func (c *Client) SetLocationForBaseURL(location string) {
-	baseUrl, _ := url.Parse(fmt.Sprintf(defaultBaseURL, defaultLocation))
-	if location != "" {
-		baseUrl, _ = url.Parse(fmt.Sprintf(defaultBaseURL, location))
-	}
-	c.BaseURL = baseUrl
+func (c *Client) SetLocation(location string) {
+	apiEndpointUrl, _ := url.Parse(fmt.Sprintf(baseURL, location))
+	c.APIEndpoint = apiEndpointUrl
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr, in which case it is resolved
-// relative to the BaseURL of the Client. Relative URLs should always be specified without a preceding slash.
+// relative to the APIEndpoint of the Client. Relative URLs should always be specified without a preceding slash.
 // If specified, the value pointed to by body is JSON encoded and included as the request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	if !strings.HasSuffix(c.BaseURL.Path, "/") {
-		return nil, fmt.Errorf("BaseURL must have a trailing slash, but %q does not", c.BaseURL)
+	if !strings.HasSuffix(c.APIEndpoint.Path, "/") {
+		return nil, fmt.Errorf("APIEndpoint must have a trailing slash, but %q does not", c.APIEndpoint)
 	}
-	u, err := c.BaseURL.Parse(urlStr)
+	u, err := c.APIEndpoint.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +153,15 @@ func CheckResponse(resp *http.Response) error {
 	}
 
 	errorResponse := &ErrorResponse{Response: resp}
+
+	requestId := resp.Header.Get("X-REQUEST-ID")
+	if requestId != "" {
+		errorResponse.RequestID = requestId
+	}
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err == nil && len(data) > 0 {
-		err := json.Unmarshal(data, &errorResponse.ErrorElements)
+		err := json.Unmarshal(data, &errorResponse.Errors)
 		if err != nil {
 			return err
 		}
