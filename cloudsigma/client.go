@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -48,11 +49,19 @@ type service struct {
 // NewBasicAuthClient returns a new CloudSigma API client. To use API methods provide username (your email)
 // and password.
 func NewBasicAuthClient(username, password string) *Client {
-	httpClient := http.DefaultClient
+	httpClient := &http.Client{
+		Timeout: time.Second * 15,
+	}
 
-	c := &Client{client: httpClient, UserAgent: userAgent, Username: username, Password: password}
+	c := &Client{
+		client:    httpClient,
+		UserAgent: userAgent,
+		Username:  username,
+		Password:  password,
+	}
 	c.SetLocation(defaultLocation)
 	c.common.client = c
+
 	c.Drives = (*DrivesService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
 	c.Keypairs = (*KeypairsService)(&c.common)
@@ -60,6 +69,7 @@ func NewBasicAuthClient(username, password string) *Client {
 	c.Locations = (*LocationsService)(&c.common)
 	c.Servers = (*ServersService)(&c.common)
 	c.Tags = (*TagsService)(&c.common)
+
 	return c
 }
 
@@ -69,6 +79,11 @@ func NewBasicAuthClient(username, password string) *Client {
 func (c *Client) SetLocation(location string) {
 	apiEndpointUrl, _ := url.Parse(fmt.Sprintf(baseURL, location))
 	c.APIEndpoint = apiEndpointUrl
+}
+
+// SetUserAgent overrides the default UserAgent.
+func (c *Client) SetUserAgent(ua string) {
+	c.UserAgent = ua
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr, in which case it is resolved

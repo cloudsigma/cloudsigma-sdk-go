@@ -53,6 +53,15 @@ func TestClient_SetLocation(t *testing.T) {
 	assert.Equal(t, "https://wdc.cloudsigma.com/api/2.0/", client.APIEndpoint.String())
 }
 
+func TestClient_SetUserAgent(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetUserAgent("terraform-provider-cloudsigma")
+
+	assert.Equal(t, "terraform-provider-cloudsigma", client.UserAgent)
+}
+
 func TestClient_NewRequest(t *testing.T) {
 	setup()
 	defer teardown()
