@@ -128,12 +128,25 @@ func TestClient_Do_httpError(t *testing.T) {
 	assert.Equal(t, 400, resp.StatusCode)
 }
 
+func TestClient_populateRequestID(t *testing.T) {
+	resp := &Response{
+		Response: &http.Response{
+			Header: map[string][]string{},
+		}}
+	resp.Header.Set("X-REQUEST-ID", "long-uuid")
+
+	resp.populateRequestID()
+
+	assert.Equal(t, "long-uuid", resp.RequestID)
+}
+
 func TestClient_CheckResponse_errorElements(t *testing.T) {
-	resp := &http.Response{
-		Request:    &http.Request{},
-		StatusCode: http.StatusBadRequest,
-		Body:       ioutil.NopCloser(strings.NewReader(`[{"error_message":"error"}]`)),
-	}
+	resp := &Response{
+		Response: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader(`[{"error_message":"error"}]`)),
+		}}
 	expected := []Error{
 		{Message: "error"},
 	}
@@ -146,10 +159,12 @@ func TestClient_CheckResponse_errorElements(t *testing.T) {
 }
 
 func TestClient_CheckResponse_errorWhenUnmarshall(t *testing.T) {
-	resp := &http.Response{
-		Request:    &http.Request{},
-		StatusCode: http.StatusBadRequest,
-		Body:       ioutil.NopCloser(strings.NewReader(`{"error_message":"response is always an array of errors"}`)),
+	resp := &Response{
+		Response: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"error_message":"response is always an array of errors"}`)),
+		},
 	}
 
 	err := CheckResponse(resp).(*json.UnmarshalTypeError)
@@ -158,10 +173,12 @@ func TestClient_CheckResponse_errorWhenUnmarshall(t *testing.T) {
 }
 
 func TestClient_CheckResponse_noBody(t *testing.T) {
-	resp := &http.Response{
-		Request:    &http.Request{},
-		StatusCode: http.StatusBadRequest,
-		Body:       ioutil.NopCloser(strings.NewReader("")),
+	resp := &Response{
+		Response: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
 	}
 
 	err := CheckResponse(resp).(*ErrorResponse)
@@ -172,27 +189,15 @@ func TestClient_CheckResponse_noBody(t *testing.T) {
 }
 
 func TestClient_CheckResponse_noErrorStatusCode(t *testing.T) {
-	resp := &http.Response{
-		Request:    &http.Request{},
-		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(strings.NewReader("")),
+	resp := &Response{
+		Response: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
 	}
 
 	err := CheckResponse(resp)
 
 	assert.NoError(t, err)
-}
-
-func TestClient_CheckResponse_requestID(t *testing.T) {
-	resp := &http.Response{
-		Request:    &http.Request{},
-		Header:     map[string][]string{},
-		StatusCode: http.StatusInternalServerError,
-		Body:       ioutil.NopCloser(strings.NewReader(`[{"error_message":"unknown error"}]`)),
-	}
-	resp.Header.Set("X-REQUEST-ID", "long-uuid")
-
-	err := CheckResponse(resp)
-
-	assert.Error(t, err)
 }
