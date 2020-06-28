@@ -14,11 +14,12 @@ import (
 )
 
 const (
-	defaultLocation = "zrh"
+	defaultLocation  = "zrh"
+	defaultUserAgent = "cloudsigma-sdk-go"
 
-	baseURL   = "https://%s.cloudsigma.com/api/2.0/"
-	mediaType = "application/json"
-	userAgent = "cloudsigma-sdk-go"
+	baseURL         = "https://%s.cloudsigma.com/api/2.0/"
+	headerRequestID = "X-REQUEST-ID"
+	mediaType       = "application/json"
 )
 
 // A Client manages communication with the CloudSigma API.
@@ -33,17 +34,26 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
-	Drives        *DrivesService
-	IPs           *IPsService
-	Keypairs      *KeypairsService
-	LibraryDrives *LibraryDrivesService
-	Locations     *LocationsService
-	Servers       *ServersService
-	Tags          *TagsService
+	// Drives        *DrivesService
+	// IPs           *IPsService
+	// Keypairs      *KeypairsService
+	// LibraryDrives *LibraryDrivesService
+	// Locations     *LocationsService
+	// Servers       *ServersService
+	Tags *TagsService
 }
 
 type service struct {
 	client *Client
+}
+
+// Response is a CloudSigma response. This wraps the standard http.Response.
+type Response struct {
+	*http.Response
+
+	Meta *Meta // Meta describes generic information about the response.
+
+	RequestID string // RequestID returned from the API, useful to contact support.
 }
 
 // NewBasicAuthClient returns a new CloudSigma API client. To use API methods provide username (your email)
@@ -55,19 +65,19 @@ func NewBasicAuthClient(username, password string) *Client {
 
 	c := &Client{
 		client:    httpClient,
-		UserAgent: userAgent,
+		UserAgent: defaultUserAgent,
 		Username:  username,
 		Password:  password,
 	}
 	c.SetLocation(defaultLocation)
 	c.common.client = c
 
-	c.Drives = (*DrivesService)(&c.common)
-	c.IPs = (*IPsService)(&c.common)
-	c.Keypairs = (*KeypairsService)(&c.common)
-	c.LibraryDrives = (*LibraryDrivesService)(&c.common)
-	c.Locations = (*LocationsService)(&c.common)
-	c.Servers = (*ServersService)(&c.common)
+	// c.Drives = (*DrivesService)(&c.common)
+	// c.IPs = (*IPsService)(&c.common)
+	// c.Keypairs = (*KeypairsService)(&c.common)
+	// c.LibraryDrives = (*LibraryDrivesService)(&c.common)
+	// c.Locations = (*LocationsService)(&c.common)
+	// c.Servers = (*ServersService)(&c.common)
 	c.Tags = (*TagsService)(&c.common)
 
 	return c
@@ -121,7 +131,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 
 // Do sends an API request and returns the API response. The API response is JSON decoded and stored in
 // the value pointed to by v, or returned as an error if an API error has occurred.
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
 	req = req.WithContext(ctx)
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -138,9 +148,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		_ = resp.Body.Close()
 	}()
 
-	err = CheckResponse(resp)
+	response := newResponse(resp)
+	err = CheckResponse(response)
 	if err != nil {
-		return resp, err
+		return response, err
 	}
 
 	if v != nil {
@@ -157,22 +168,31 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		}
 	}
 
-	return resp, err
+	return response, err
+}
+
+// newResponse creates a new Response for the provided http.Response. r must be not nil.
+func newResponse(r *http.Response) *Response {
+	response := &Response{Response: r}
+	response.populateRequestID()
+	return response
+}
+
+// populateRequestID parses the request headers and populates the response request id.
+func (r *Response) populateRequestID() {
+	if requestID := r.Header.Get(headerRequestID); requestID != "" {
+		r.RequestID = requestID
+	}
 }
 
 // CheckResponse checks the API response for errors, and returns them if present. A response is considered
 // an error if it has a status code outside the 200 range.
-func CheckResponse(resp *http.Response) error {
+func CheckResponse(resp *Response) error {
 	if code := resp.StatusCode; code >= 200 && code <= 299 {
 		return nil
 	}
 
 	errorResponse := &ErrorResponse{Response: resp}
-
-	requestId := resp.Header.Get("X-REQUEST-ID")
-	if requestId != "" {
-		errorResponse.RequestID = requestId
-	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err == nil && len(data) > 0 {
