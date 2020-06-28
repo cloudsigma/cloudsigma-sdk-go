@@ -1,119 +1,176 @@
 package cloudsigma
 
-//
-// import (
-// 	"context"
-// 	"encoding/json"
-// 	"fmt"
-// 	"net/http"
-// 	"testing"
-//
-// 	"github.com/stretchr/testify/assert"
-// )
-//
-// func TestKeypairs_Create(t *testing.T) {
-// 	client, mux, _, teardown := setup()
-// 	defer teardown()
-// 	input := &KeypairCreateRequest{
-// 		Keypairs: []Keypair{
-// 			{Name: "uploaded key", PublicKey: "long-long-public-key"},
-// 		},
-// 	}
-// 	mux.HandleFunc("/keypairs/", func(w http.ResponseWriter, r *http.Request) {
-// 		v := new(KeypairCreateRequest)
-// 		_ = json.NewDecoder(r.Body).Decode(v)
-// 		assert.Equal(t, input, v)
-//
-// 		assert.Equal(t, "POST", r.Method)
-// 		assert.Equal(t, authorizationHeader, r.Header.Get("Authorization"))
-// 		fmt.Fprint(w, `{"objects":[{"name":"uploaded key","public_key":"long-long-public-key"}]}`)
-// 	})
-// 	expected := &Keypair{
-// 		Name:      "uploaded key",
-// 		PublicKey: "long-long-public-key",
-// 	}
-//
-// 	keypair, _, err := client.Keypairs.Create(context.Background(), input)
-//
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, expected, keypair)
-// }
-//
-// func TestKeypairs_Create_emptyPayload(t *testing.T) {
-// 	client, _, _, teardown := setup()
-// 	defer teardown()
-//
-// 	_, _, err := client.Keypairs.Create(context.Background(), nil)
-//
-// 	assert.Error(t, err)
-// 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
-// }
-//
-// func TestKeypairs_Delete(t *testing.T) {
-// 	client, mux, _, teardown := setup()
-// 	defer teardown()
-// 	mux.HandleFunc("/keypairs/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
-// 		assert.Equal(t, "DELETE", r.Method)
-// 	})
-//
-// 	_, err := client.Keypairs.Delete(context.Background(), "long-uuid")
-//
-// 	assert.NoError(t, err)
-// }
-//
-// func TestKeypairs_Delete_emptyUUID(t *testing.T) {
-// 	client, _, _, teardown := setup()
-// 	defer teardown()
-//
-// 	_, err := client.Keypairs.Delete(context.Background(), "")
-//
-// 	assert.Error(t, err)
-// 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
-// }
-//
-// func TestKeypairs_Delete_invalidUUID(t *testing.T) {
-// 	client, _, _, teardown := setup()
-// 	defer teardown()
-//
-// 	_, err := client.Keypairs.Delete(context.Background(), "%")
-//
-// 	assert.Error(t, err)
-// }
-//
-// func TestKeypairs_Get(t *testing.T) {
-// 	client, mux, _, teardown := setup()
-// 	defer teardown()
-// 	mux.HandleFunc("/keypairs/long-uuid", func(w http.ResponseWriter, r *http.Request) {
-// 		assert.Equal(t, "GET", r.Method)
-// 		assert.Equal(t, authorizationHeader, r.Header.Get("Authorization"))
-// 		fmt.Fprint(w, `{"name":"generated ssh keypair","uuid":"long-uuid"}`)
-// 	})
-// 	expected := &Keypair{
-// 		Name: "generated ssh keypair",
-// 		UUID: "long-uuid",
-// 	}
-//
-// 	keypair, _, err := client.Keypairs.Get(context.Background(), "long-uuid")
-//
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, expected, keypair)
-// }
-//
-// func TestKeypairs_Get_emptyUUID(t *testing.T) {
-// 	client, _, _, teardown := setup()
-// 	defer teardown()
-//
-// 	_, _, err := client.Keypairs.Get(context.Background(), "")
-//
-// 	assert.Error(t, err)
-// 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
-// }
-//
-// func TestKeypairs_Get_invalidUUID(t *testing.T) {
-// 	client, _, _, teardown := setup()
-// 	defer teardown()
-//
-// 	_, _, err := client.Keypairs.Get(context.Background(), "%")
-//
-// 	assert.Error(t, err)
-// }
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestKeypairs_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/keypairs/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[{"name":"test key","public_key":"long-public-key"}],"meta":{"total_count":1}}`)
+	})
+	expected := []Keypair{
+		{
+			Name:      "test key",
+			PublicKey: "long-public-key",
+		},
+	}
+
+	keypairs, resp, err := client.Keypairs.List(ctx)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, keypairs)
+	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestKeypairs_Get(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/keypairs/long-uuid", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"name":"test key","uuid":"long-uuid"}`)
+	})
+	expected := &Keypair{
+		Name: "test key",
+		UUID: "long-uuid",
+	}
+
+	keypair, _, err := client.Keypairs.Get(ctx, "long-uuid")
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, keypair)
+}
+
+func TestKeypairs_Get_emptyUUID(t *testing.T) {
+	_, _, err := client.Keypairs.Get(ctx, "")
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
+}
+
+func TestKeypairs_Get_invalidUUID(t *testing.T) {
+	_, _, err := client.Keypairs.Get(ctx, "%")
+
+	assert.Error(t, err)
+}
+
+func TestKeypairs_Create(t *testing.T) {
+	setup()
+	defer teardown()
+
+	input := &KeypairCreateRequest{
+		Keypairs: []Keypair{
+			{Name: "test keypair"},
+		},
+	}
+	mux.HandleFunc("/keypairs/", func(w http.ResponseWriter, r *http.Request) {
+		v := new(KeypairCreateRequest)
+		_ = json.NewDecoder(r.Body).Decode(v)
+		assert.Equal(t, input, v)
+		assert.Equal(t, http.MethodPost, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[{"name":"test keypair","public_key":"long-long-public-key"}]}`)
+	})
+	expected := []Keypair{
+		{Name: "test keypair", PublicKey: "long-long-public-key"},
+	}
+
+	keypairs, _, err := client.Keypairs.Create(ctx, input)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, keypairs)
+}
+
+func TestKeypairs_Create_emptyPayload(t *testing.T) {
+	_, _, err := client.Keypairs.Create(ctx, nil)
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
+}
+
+func TestKeypairs_Update(t *testing.T) {
+	setup()
+	defer teardown()
+
+	input := &KeypairUpdateRequest{
+		Keypair: &Keypair{
+			Name: "test keypair v2",
+		},
+	}
+	mux.HandleFunc("/keypairs/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
+		v := new(KeypairUpdateRequest)
+		_ = json.NewDecoder(r.Body).Decode(v)
+		assert.Equal(t, input, v)
+		assert.Equal(t, http.MethodPut, r.Method)
+		_, _ = fmt.Fprint(w, `{"name":"test keypair v2","uuid":"long-uuid"}`)
+	})
+	expected := &Keypair{
+		Name: "test keypair v2",
+		UUID: "long-uuid",
+	}
+
+	keypair, _, err := client.Keypairs.Update(ctx, "long-uuid", input)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, keypair)
+}
+
+func TestKeypairs_Update_emptyUUID(t *testing.T) {
+	input := &KeypairUpdateRequest{
+		Keypair: &Keypair{
+			Name: "test keypair v2",
+		},
+	}
+
+	_, _, err := client.Keypairs.Update(ctx, "", input)
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
+}
+
+func TestKeypairs_Update_invalidUUID(t *testing.T) {
+	input := &KeypairUpdateRequest{
+		Keypair: &Keypair{
+			Name: "test keypair v2",
+		},
+	}
+
+	_, _, err := client.Keypairs.Update(ctx, "%", input)
+
+	assert.Error(t, err)
+}
+
+func TestKeypairs_Update_emptyPayload(t *testing.T) {
+	_, _, err := client.Keypairs.Update(ctx, "long-uuid", nil)
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
+}
+
+func TestKeypairs_Delete(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/keypairs/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method)
+	})
+
+	_, err := client.Keypairs.Delete(ctx, "long-uuid")
+
+	assert.NoError(t, err)
+}
+
+func TestKeypairs_Delete_emptyUUID(t *testing.T) {
+	_, err := client.Keypairs.Delete(ctx, "")
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
+}

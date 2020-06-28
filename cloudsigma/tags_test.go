@@ -163,9 +163,6 @@ func TestTags_Delete(t *testing.T) {
 }
 
 func TestTags_Delete_emptyUUID(t *testing.T) {
-	setup()
-	defer teardown()
-
 	_, err := client.Tags.Delete(ctx, "")
 
 	assert.Error(t, err)
