@@ -26,13 +26,6 @@ type Drive struct {
 	UUID        string    `json:"uuid"`
 }
 
-type DriveCloneRequest struct {
-	Media       string `json:"media,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Size        int    `json:"size,omitempty"`
-	StorageType string `json:"storage_type,omitempty"`
-}
-
 // Get provides detailed information for drive identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#list-single-drive

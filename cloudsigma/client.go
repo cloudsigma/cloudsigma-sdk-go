@@ -87,8 +87,8 @@ func NewBasicAuthClient(username, password string) *Client {
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
 func (c *Client) SetLocation(location string) {
-	apiEndpointUrl, _ := url.Parse(fmt.Sprintf(baseURL, location))
-	c.APIEndpoint = apiEndpointUrl
+	apiEndpointURL, _ := url.Parse(fmt.Sprintf(baseURL, location))
+	c.APIEndpoint = apiEndpointURL
 }
 
 // SetUserAgent overrides the default UserAgent.
