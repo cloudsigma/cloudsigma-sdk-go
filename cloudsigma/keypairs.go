@@ -34,8 +34,8 @@ type KeypairUpdateRequest struct {
 }
 
 type keypairsRoot struct {
-	Meta     *Meta     `json:"meta,omitempty"`
 	Keypairs []Keypair `json:"objects"`
+	Meta     *Meta     `json:"meta,omitempty"`
 }
 
 // List provides a list of keypairs.
