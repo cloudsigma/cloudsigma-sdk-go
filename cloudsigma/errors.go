@@ -3,7 +3,6 @@ package cloudsigma
 import (
 	"errors"
 	"fmt"
-	"net/http"
 )
 
 var (
@@ -15,9 +14,8 @@ var (
 //
 // CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/errors.html
 type ErrorResponse struct {
-	Response  *http.Response // HTTP response that caused this error.
-	Errors    []Error
-	RequestID string // RequestID returned from the API, useful to contact support.
+	Response *Response // HTTP response that caused this error.
+	Errors   []Error
 }
 
 type Error struct {
@@ -27,9 +25,9 @@ type Error struct {
 }
 
 func (r *ErrorResponse) Error() string {
-	if r.RequestID != "" {
+	if r.Response.RequestID != "" {
 		return fmt.Sprintf("%v %v: %d (request %q) %+v",
-			r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.RequestID, r.Errors)
+			r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Response.RequestID, r.Errors)
 	}
 	return fmt.Sprintf("%v %v: %d %+v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Errors)

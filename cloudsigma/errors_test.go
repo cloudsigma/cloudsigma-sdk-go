@@ -10,12 +10,14 @@ import (
 
 func TestErrors_Error_messageFormat(t *testing.T) {
 	errorResponse := &ErrorResponse{
-		Response: &http.Response{
-			Request: &http.Request{
-				Method: http.MethodGet,
-				URL:    &url.URL{Scheme: "https", Path: "cloudsigma.com/api"},
+		Response: &Response{
+			Response: &http.Response{
+				Request: &http.Request{
+					Method: http.MethodGet,
+					URL:    &url.URL{Scheme: "https", Path: "cloudsigma.com/api"},
+				},
+				StatusCode: 200,
 			},
-			StatusCode: 200,
 		},
 		Errors: []Error{
 			{Message: "first", Type: "permission"},
@@ -30,18 +32,20 @@ func TestErrors_Error_messageFormat(t *testing.T) {
 
 func TestErrors_Error_quotedRequestID(t *testing.T) {
 	errorResponse := &ErrorResponse{
-		Response: &http.Response{
-			Request: &http.Request{
-				Method: http.MethodGet,
-				URL:    &url.URL{Scheme: "https", Path: "cloudsigma.com/api"},
+		Response: &Response{
+			Response: &http.Response{
+				Request: &http.Request{
+					Method: http.MethodGet,
+					URL:    &url.URL{Scheme: "https", Path: "cloudsigma.com/api"},
+				},
+				StatusCode: 500,
 			},
-			StatusCode: 500,
 		},
 		Errors: []Error{
 			{Message: "unknown error", Type: "backend"},
 		},
 	}
-	errorResponse.RequestID = "long-long-uuid"
+	errorResponse.Response.RequestID = "long-long-uuid"
 	expectedMessage := "GET https://cloudsigma.com/api: 500 (request \"long-long-uuid\") [{Message:unknown error Point: Type:backend}]"
 
 	assert.Error(t, errorResponse)
