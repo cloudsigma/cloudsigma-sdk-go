@@ -2,7 +2,6 @@ package cloudsigma
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 )
@@ -14,28 +13,50 @@ const tagsBasePath = "tags"
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html
 type TagsService service
 
+// Tag represents a CloudSigma tag.
 type Tag struct {
-	Meta        TagMeta `json:"meta,omitempty"`
-	Name        string  `json:"name,omitempty"`
-	Owner       Owner   `json:"owner,omitempty"`
-	ResourceURI string  `json:"resource_uri,omitempty"`
-	UUID        string  `json:"uuid,omitempty"`
+	Meta        TagMeta       `json:"meta,omitempty"`
+	Name        string        `json:"name,omitempty"`
+	Owner       Owner         `json:"owner,omitempty"`
+	ResourceURI string        `json:"resource_uri,omitempty"`
+	Resources   []TagResource `json:"resources,omitempty"`
+	UUID        string        `json:"uuid"`
 }
 
+// TagMeta represents an object with meta information about the tag.
 type TagMeta struct {
 	Color string `json:"color,omitempty"`
 }
 
+// TagResource represents a resource assigned to the tag.
+type TagResource struct {
+	Owner        Owner  `json:"owner,omitempty"`
+	ResourceType string `json:"res_type,omitempty"`
+	ResourceURI  string `json:"resource_uri,omitempty"`
+	UUID         string `json:"uuid"`
+}
+
+// TagCreateRequest represents a request to create a tag.
 type TagCreateRequest struct {
 	Tags []Tag `json:"objects"`
 }
 
+// TagUpdateRequest represents a request to update a tag.
+type TagUpdateRequest struct {
+	Name      string   `json:"name,omitempty"`
+	Resources []string `json:"resources,omitempty"`
+}
+
 type tagsRoot struct {
+	Meta *Meta `json:"meta,omitempty"`
 	Tags []Tag `json:"objects"`
 }
 
-func (s *TagsService) List(ctx context.Context) ([]Tag, *http.Response, error) {
-	path := fmt.Sprintf("%v", tagsBasePath)
+// List provides a list of tags to which the authenticated user has access.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#listing
+func (s *TagsService) List(ctx context.Context) ([]Tag, *Response, error) {
+	path := fmt.Sprintf("%v/", tagsBasePath)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -47,11 +68,17 @@ func (s *TagsService) List(ctx context.Context) ([]Tag, *http.Response, error) {
 	if err != nil {
 		return nil, resp, err
 	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
 
-	return root.Tags, resp, err
+	return root.Tags, resp, nil
 }
 
-func (s *TagsService) Get(ctx context.Context, uuid string) (*Tag, *http.Response, error) {
+// Get provides detailed information for tag identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#list-single-tag
+func (s *TagsService) Get(ctx context.Context, uuid string) (*Tag, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -69,10 +96,13 @@ func (s *TagsService) Get(ctx context.Context, uuid string) (*Tag, *http.Respons
 		return nil, resp, err
 	}
 
-	return tag, resp, err
+	return tag, resp, nil
 }
 
-func (s *TagsService) Create(ctx context.Context, tagCreateRequest *TagCreateRequest) (*Tag, *http.Response, error) {
+// Create makes a new tag (or tags) with given payload.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#creating
+func (s *TagsService) Create(ctx context.Context, tagCreateRequest *TagCreateRequest) ([]Tag, *Response, error) {
 	if tagCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
@@ -90,35 +120,40 @@ func (s *TagsService) Create(ctx context.Context, tagCreateRequest *TagCreateReq
 		return nil, resp, err
 	}
 
-	if len(root.Tags) > 1 {
-		return nil, resp, errors.New("root.Tags count cannot be more than 1")
-	}
-
-	return &root.Tags[0], resp, err
+	return root.Tags, resp, nil
 }
 
-func (s *TagsService) Update(ctx context.Context, tag *Tag) (*Tag, *http.Response, error) {
-	if tag == nil {
+// Update edits a tag identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#editing
+func (s *TagsService) Update(ctx context.Context, uuid string, tagUpdateRequest *TagUpdateRequest) (*Tag, *Response, error) {
+	if uuid == "" {
+		return nil, nil, ErrEmptyArgument
+	}
+	if tagUpdateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
-	path := fmt.Sprintf("%v/%v/", tagsBasePath, tag.UUID)
+	path := fmt.Sprintf("%v/%v/", tagsBasePath, uuid)
 
-	req, err := s.client.NewRequest(http.MethodPut, path, tag)
+	req, err := s.client.NewRequest(http.MethodPut, path, tagUpdateRequest)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	root := new(Tag)
-	resp, err := s.client.Do(ctx, req, root)
+	tag := new(Tag)
+	resp, err := s.client.Do(ctx, req, tag)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return root, resp, err
+	return tag, resp, nil
 }
 
-func (s *TagsService) Delete(ctx context.Context, uuid string) (*http.Response, error) {
+// Delete removes a single tag identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#deleting
+func (s *TagsService) Delete(ctx context.Context, uuid string) (*Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
 	}
