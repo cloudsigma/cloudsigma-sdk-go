@@ -15,15 +15,15 @@ type DrivesService service
 
 // Drive represents a CloudSigma drive.
 type Drive struct {
-	Media       string `json:"media,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Owner       Owner  `json:"owner,omitempty"`
-	ResourceURI string `json:"resource_uri,omitempty"`
-	Size        int    `json:"size,omitempty"`
-	Status      string `json:"status,omitempty"`
-	StorageType string `json:"storage_type,omitempty"`
-	Tags        []Tag  `json:"tags,omitempty"`
-	UUID        string `json:"uuid"`
+	Media       string    `json:"media,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	Owner       Ownership `json:"owner,omitempty"`
+	ResourceURI string    `json:"resource_uri,omitempty"`
+	Size        int       `json:"size,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	StorageType string    `json:"storage_type,omitempty"`
+	Tags        []Tag     `json:"tags,omitempty"`
+	UUID        string    `json:"uuid"`
 }
 
 type DriveCloneRequest struct {
@@ -31,10 +31,6 @@ type DriveCloneRequest struct {
 	Name        string `json:"name,omitempty"`
 	Size        int    `json:"size,omitempty"`
 	StorageType string `json:"storage_type,omitempty"`
-}
-
-type drivesRoot struct {
-	Drives []Drive `json:"objects"`
 }
 
 // Get provides detailed information for drive identified by uuid.

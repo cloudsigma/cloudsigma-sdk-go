@@ -15,13 +15,13 @@ type IPsService service
 
 // IP represents a CloudSigma IP address.
 type IP struct {
-	Gateway     string   `json:"gateway,omitempty"`
-	Nameservers []string `json:"nameservers,omitempty"`
-	Netmask     int      `json:"netmask,omitempty"`
-	Owner       Owner    `json:"owner,omitempty"`
-	ResourceURI string   `json:"resource_uri,omitempty"`
-	Tags        []Tag    `json:"tags,omitempty"`
-	UUID        string   `json:"uuid"`
+	Gateway     string    `json:"gateway,omitempty"`
+	Nameservers []string  `json:"nameservers,omitempty"`
+	Netmask     int       `json:"netmask,omitempty"`
+	Owner       Ownership `json:"owner,omitempty"`
+	ResourceURI string    `json:"resource_uri,omitempty"`
+	Tags        []Tag     `json:"tags,omitempty"`
+	UUID        string    `json:"uuid"`
 }
 
 // Get provides detailed information for IP address identified by uuid.

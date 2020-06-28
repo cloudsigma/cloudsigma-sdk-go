@@ -21,8 +21,8 @@ type Server struct {
 	Drives      []ServerDrive `json:"drive,omitempty"`
 	Memory      int           `json:"mem"`
 	Name        string        `json:"name"`
-	Owner       Owner         `json:"owner"`
-	PublicKeys  []PublicKey   `json:"pubkeys,omitempty"`
+	Owner       Ownership     `json:"owner"`
+	PublicKeys  []Ownership   `json:"pubkeys,omitempty"`
 	ResourceURI string        `json:"resource_uri"`
 	Runtime     Runtime       `json:"runtime,omitempty"`
 	Status      string        `json:"status,omitempty"`
@@ -37,28 +37,13 @@ type ServerDrive struct {
 	DriveUUID  string `json:"drive"`
 }
 
-type Owner struct {
-	ResourceURI string `json:"resource_uri,omitempty"`
-	UUID        string `json:"uuid"`
-}
-
-type PublicKey struct {
-	ResourceURI string `json:"resource_uri,omitempty"`
-	UUID        string `json:"uuid"`
-}
-
 type Runtime struct {
 	RuntimeNICS []RuntimeNIC `json:"nics,omitempty"`
 }
 
 type RuntimeNIC struct {
-	InterfaceType string      `json:"interface_type,omitempty"`
-	IPv4          RuntimeIPv4 `json:"ip_v4,omitempty"`
-}
-
-type RuntimeIPv4 struct {
-	ResourceURI string `json:"resource_uri,omitempty"`
-	UUID        string `json:"uuid,omitempty"`
+	InterfaceType string    `json:"interface_type,omitempty"`
+	IPv4          Ownership `json:"ip_v4,omitempty"`
 }
 
 type ServerAction struct {
@@ -104,7 +89,7 @@ type serversRoot struct {
 // Get provides detailed information for server identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#server-runtime-and-server-details
-func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *http.Response, error) {
+func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -128,7 +113,7 @@ func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *http.R
 // Create makes a new virtual server with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#creating
-func (s *ServersService) Create(ctx context.Context, serverCreateRequest *ServerCreateRequest) (*Server, *http.Response, error) {
+func (s *ServersService) Create(ctx context.Context, serverCreateRequest *ServerCreateRequest) (*Server, *Response, error) {
 	if serverCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
@@ -156,7 +141,7 @@ func (s *ServersService) Create(ctx context.Context, serverCreateRequest *Server
 // Delete removes a server together with it's all attached drives (recursive delete).
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#delete-server-together-with-attached-drives-recursive-delete
-func (s *ServersService) Delete(ctx context.Context, uuid string) (*http.Response, error) {
+func (s *ServersService) Delete(ctx context.Context, uuid string) (*Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
 	}
@@ -174,7 +159,7 @@ func (s *ServersService) Delete(ctx context.Context, uuid string) (*http.Respons
 // ServerDrive edits a server with attaching drives to it.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#attach-a-drive
-func (s *ServersService) AttachDrive(ctx context.Context, serverUUID string, attachDriveRequest *AttachDriveRequest) (*Server, *http.Response, error) {
+func (s *ServersService) AttachDrive(ctx context.Context, serverUUID string, attachDriveRequest *AttachDriveRequest) (*Server, *Response, error) {
 	if serverUUID == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -201,25 +186,25 @@ func (s *ServersService) AttachDrive(ctx context.Context, serverUUID string, att
 // Start starts a server with specific UUID.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#start
-func (s *ServersService) Start(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+func (s *ServersService) Start(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
 	return s.doAction(ctx, uuid, "start")
 }
 
 // Stop stops a server with specific UUID. This action is equivalent to pulling the power cord of a physical server.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#stop
-func (s *ServersService) Stop(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+func (s *ServersService) Stop(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
 	return s.doAction(ctx, uuid, "stop")
 }
 
 // Stop Sends an ACPI shutdowns to a server with specific UUID for a minute.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#acpi-shutdown
-func (s *ServersService) Shutdown(ctx context.Context, uuid string) (*ServerAction, *http.Response, error) {
+func (s *ServersService) Shutdown(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
 	return s.doAction(ctx, uuid, "shutdown")
 }
 
-func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*ServerAction, *http.Response, error) {
+func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*ServerAction, *Response, error) {
 	if uuid == "" || action == "" {
 		return nil, nil, ErrEmptyArgument
 	}
