@@ -2,7 +2,6 @@ package cloudsigma
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 )
@@ -12,30 +11,34 @@ const libdriveBasePath = "libdrives"
 // LibraryDrivesService handles communication with the library drives related
 // methods of the CloudSigma API.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html
 type LibraryDrivesService service
 
 // LibraryDrive represents a CloudSigma library drive.
 type LibraryDrive struct {
-	Arch        string `json:"arch"`
+	Arch        string `json:"arch,omitempty"`
 	Description string `json:"description,omitempty"`
-	Favourite   bool   `json:"favourite"`
-	ImageType   string `json:"image_type"`
-	Media       string `json:"media"`
-	Name        string `json:"name"`
-	OS          string `json:"os"`
-	Paid        bool   `json:"paid"`
-	ResourceURI string `json:"resource_uri"`
-	Size        int    `json:"size"`
-	Status      string `json:"status"`
-	StorageType string `json:"storage_type"`
+	Favourite   bool   `json:"favourite,omitempty"`
+	ImageType   string `json:"image_type,omitempty"`
+	Media       string `json:"media,omitempty"`
+	Name        string `json:"name,omitempty"`
+	OS          string `json:"os,omitempty"`
+	Paid        bool   `json:"paid,omitempty"`
+	ResourceURI string `json:"resource_uri,omitempty"`
+	Size        int    `json:"size,omitempty"`
+	Status      string `json:"status,omitempty"`
+	StorageType string `json:"storage_type,omitempty"`
 	UUID        string `json:"uuid"`
+}
+
+type libraryDrivesRoot struct {
+	LibraryDrives []LibraryDrive `json:"objects"`
 }
 
 // Get provides detailed information for library drive identified by uuid.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#list-single-drive
-func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDrive, *http.Response, error) {
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#list-single-drive
+func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDrive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -60,30 +63,23 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 // definition can be omitted. Size of the cloned drive can only be bigger or the same.
 //
 // CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#cloning-library-drive
-func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, driveCloneRequest *DriveCloneRequest) (*Drive, *http.Response, error) {
+func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string) (*LibraryDrive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
-	}
-	if driveCloneRequest == nil {
-		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/%v/action/?do=clone", libdriveBasePath, uuid)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, driveCloneRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	root := new(drivesRoot)
+	root := new(libraryDrivesRoot)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	if len(root.Drives) > 1 {
-		return nil, resp, errors.New("root.Drives count cannot be more than 1")
-	}
-
-	return &root.Drives[0], resp, err
+	return &root.LibraryDrives[0], resp, nil
 }
