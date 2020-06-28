@@ -10,21 +10,24 @@ const ipBasePath = "ips"
 
 // IPsService handles communication with the IPs related methods of the CloudSigma API.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/networking.html#ips
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#ips
 type IPsService service
 
-// IP represents a CloudSigma ip address.
+// IP represents a CloudSigma IP address.
 type IP struct {
 	Gateway     string   `json:"gateway,omitempty"`
 	Nameservers []string `json:"nameservers,omitempty"`
 	Netmask     int      `json:"netmask,omitempty"`
+	Owner       Owner    `json:"owner,omitempty"`
+	ResourceURI string   `json:"resource_uri,omitempty"`
+	Tags        []Tag    `json:"tags,omitempty"`
 	UUID        string   `json:"uuid"`
 }
 
 // Get provides detailed information for IP address identified by uuid.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/networking.html#get-single-ip
-func (s *IPsService) Get(ctx context.Context, uuid string) (*IP, *http.Response, error) {
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#get-single-ip
+func (s *IPsService) Get(ctx context.Context, uuid string) (*IP, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
