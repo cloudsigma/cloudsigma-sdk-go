@@ -10,17 +10,19 @@ const driveBasePath = "drives"
 
 // DrivesService handles communication with the drives related methods of the CloudSigma API.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/drives.html
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html
 type DrivesService service
 
 // Drive represents a CloudSigma drive.
 type Drive struct {
-	Media       string `json:"media"`
-	Name        string `json:"name"`
-	ResourceURI string `json:"resource_uri"`
-	Size        int    `json:"size"`
-	Status      string `json:"status"`
-	StorageType string `json:"storage_type"`
+	Media       string `json:"media,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Owner       Owner  `json:"owner,omitempty"`
+	ResourceURI string `json:"resource_uri,omitempty"`
+	Size        int    `json:"size,omitempty"`
+	Status      string `json:"status,omitempty"`
+	StorageType string `json:"storage_type,omitempty"`
+	Tags        []Tag  `json:"tags,omitempty"`
 	UUID        string `json:"uuid"`
 }
 
@@ -37,8 +39,8 @@ type drivesRoot struct {
 
 // Get provides detailed information for drive identified by uuid.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/drives.html#list-single-drive
-func (s *DrivesService) Get(ctx context.Context, uuid string) (*Drive, *http.Response, error) {
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#list-single-drive
+func (s *DrivesService) Get(ctx context.Context, uuid string) (*Drive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
