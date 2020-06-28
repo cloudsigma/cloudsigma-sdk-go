@@ -17,7 +17,7 @@ var (
 
 // An ErrorResponse reports one or more errors caused by an API request.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/errors.html
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/errors.html
 type ErrorResponse struct {
 	Response *Response // HTTP response that caused this error.
 	Errors   []Error

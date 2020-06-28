@@ -11,7 +11,7 @@ const serverBasePath = "servers"
 
 // ServersService handles communication with the servers related methods of the CloudSigma API.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/servers.html
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html
 type ServersService service
 
 // Server represents a CloudSigma server.

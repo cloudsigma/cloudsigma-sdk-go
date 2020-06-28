@@ -62,7 +62,7 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 // Clone duplicates a drive. Request body is optional and any or all of the key/value pairs from the drive
 // definition can be omitted. Size of the cloned drive can only be bigger or the same.
 //
-// CloudSigma API docs: http://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#cloning-library-drive
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#cloning-library-drive
 func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string) (*LibraryDrive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
