@@ -15,7 +15,7 @@ type FirewallPolicy struct {
 	Owner       Ownership            `json:"owner,omitempty"`
 	ResourceURI string               `json:"resource_uri,omitempty"`
 	Rules       []FirewallPolicyRule `json:"rules,omitempty"`
-	UUID        string               `json:"uuid"`
+	UUID        string               `json:"uuid,omitempty"`
 }
 
 type FirewallPolicyRule struct {
