@@ -34,6 +34,7 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
+	ACLs          *ACLsService
 	Capabilities  *CapabilitiesService
 	Drives        *DrivesService
 	IPs           *IPsService
@@ -74,6 +75,7 @@ func NewBasicAuthClient(username, password string) *Client {
 	c.SetLocation(defaultLocation)
 	c.common.client = c
 
+	c.ACLs = (*ACLsService)(&c.common)
 	c.Capabilities = (*CapabilitiesService)(&c.common)
 	c.Drives = (*DrivesService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
