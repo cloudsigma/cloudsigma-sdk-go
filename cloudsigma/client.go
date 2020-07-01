@@ -40,6 +40,7 @@ type Client struct {
 	Keypairs      *KeypairsService
 	LibraryDrives *LibraryDrivesService
 	Locations     *LocationsService
+	Profile       *ProfileService
 	Servers       *ServersService
 	Tags          *TagsService
 }
@@ -79,6 +80,7 @@ func NewBasicAuthClient(username, password string) *Client {
 	c.Keypairs = (*KeypairsService)(&c.common)
 	c.LibraryDrives = (*LibraryDrivesService)(&c.common)
 	c.Locations = (*LocationsService)(&c.common)
+	c.Profile = (*ProfileService)(&c.common)
 	c.Servers = (*ServersService)(&c.common)
 	c.Tags = (*TagsService)(&c.common)
 
