@@ -14,11 +14,11 @@ type ACL struct {
 	Name        string    `json:"name,omitempty"`
 	Owner       Ownership `json:"owner,omitempty"`
 	ResourceURI string    `json:"resource_uri,omitempty"`
-	Rules       []Rule    `json:"rules,omitempty"`
+	Rules       []ACLRule `json:"rules,omitempty"`
 	UUID        string    `json:"uuid"`
 }
 
-type Rule struct {
+type ACLRule struct {
 	Permission string `json:"permission,omitempty"`
 }
 
