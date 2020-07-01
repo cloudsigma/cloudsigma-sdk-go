@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-const ipBasePath = "ips"
+const ipsBasePath = "ips"
 
 // IPsService handles communication with the IPs related methods of the CloudSigma API.
 //
@@ -24,6 +24,31 @@ type IP struct {
 	UUID        string    `json:"uuid"`
 }
 
+type ipsRoot struct {
+	Meta *Meta `json:"meta,omitempty"`
+	IPs  []IP  `json:"objects"`
+}
+
+func (s *IPsService) List(ctx context.Context) ([]IP, *Response, error) {
+	path := fmt.Sprintf("%v/", ipsBasePath)
+
+	req, err := s.client.NewRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(ipsRoot)
+	resp, err := s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
+
+	return root.IPs, resp, nil
+}
+
 // Get provides detailed information for IP address identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#get-single-ip
@@ -32,7 +57,7 @@ func (s *IPsService) Get(ctx context.Context, uuid string) (*IP, *Response, erro
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", ipBasePath, uuid)
+	path := fmt.Sprintf("%v/%v", ipsBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
