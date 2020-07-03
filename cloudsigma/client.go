@@ -47,6 +47,7 @@ type Client struct {
 	Servers          *ServersService
 	Subscriptions    *SubscriptionsService
 	Tags             *TagsService
+	VLANs            *VLANsService
 }
 
 type service struct {
@@ -91,6 +92,7 @@ func NewBasicAuthClient(username, password string) *Client {
 	c.Servers = (*ServersService)(&c.common)
 	c.Subscriptions = (*SubscriptionsService)(&c.common)
 	c.Tags = (*TagsService)(&c.common)
+	c.VLANs = (*VLANsService)(&c.common)
 
 	return c
 }
