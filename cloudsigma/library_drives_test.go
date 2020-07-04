@@ -8,6 +8,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestLibraryDrives_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/libdrives/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[{"arch":"64","uuid":"long-uuid"}],"meta":{"total_count":1}}`)
+	})
+	expected := []LibraryDrive{
+		{
+			Arch: "64",
+			UUID: "long-uuid",
+		},
+	}
+
+	drives, resp, err := client.LibraryDrives.List(ctx)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, drives)
+	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
 func TestLibraryDrives_Get(t *testing.T) {
 	setup()
 	defer teardown()
@@ -44,6 +66,31 @@ func TestLibraryDrives_Clone(t *testing.T) {
 	setup()
 	defer teardown()
 
+	input := &LibraryDriveCloneRequest{
+		LibraryDrive: &LibraryDrive{
+			Size: 3221225472, // 3GB
+		},
+	}
+	mux.HandleFunc("/libdrives/long-uuid/action/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, "clone", r.URL.Query().Get("do"))
+		_, _ = fmt.Fprint(w, `{"objects":[{"size":3221225472,"uuid":"generated-uuid"}]}`)
+	})
+	expected := &LibraryDrive{
+		Size: 3221225472,
+		UUID: "generated-uuid",
+	}
+
+	libraryDrive, _, err := client.LibraryDrives.Clone(ctx, "long-uuid", input)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, libraryDrive)
+}
+
+func TestLibraryDrives_Clone_emptyPayload(t *testing.T) {
+	setup()
+	defer teardown()
+
 	mux.HandleFunc("/libdrives/long-uuid/action/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Equal(t, "clone", r.URL.Query().Get("do"))
@@ -54,21 +101,21 @@ func TestLibraryDrives_Clone(t *testing.T) {
 		UUID: "generated-uuid",
 	}
 
-	libraryDrive, _, err := client.LibraryDrives.Clone(ctx, "long-uuid")
+	libraryDrive, _, err := client.LibraryDrives.Clone(ctx, "long-uuid", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, libraryDrive)
 }
 
 func TestLibraryDrives_Clone_emptyUUID(t *testing.T) {
-	_, _, err := client.LibraryDrives.Clone(ctx, "")
+	_, _, err := client.LibraryDrives.Clone(ctx, "", nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
 }
 
 func TestLibraryDrives_Clone_invalidUUID(t *testing.T) {
-	_, _, err := client.LibraryDrives.Clone(ctx, "%")
+	_, _, err := client.LibraryDrives.Clone(ctx, "%", nil)
 
 	assert.Error(t, err)
 }

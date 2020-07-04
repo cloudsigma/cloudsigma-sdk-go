@@ -39,8 +39,8 @@ type ACLUpdateRequest struct {
 }
 
 type aclsRoot struct {
-	Meta *Meta `json:"meta,omitempty"`
 	ACLs []ACL `json:"objects"`
+	Meta *Meta `json:"meta,omitempty"`
 }
 
 // List provides a list of ACLs defined by the authenticated user.
