@@ -8,24 +8,32 @@ import (
 
 const aclsBasePath = "acls"
 
+// ACLsService handles communication with the ACL (Access Control Lists) related methods of the CloudSigma API.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html
 type ACLsService service
 
+// ACL represents a CloudSigma ACL.
 type ACL struct {
-	Name        string    `json:"name,omitempty"`
-	Owner       Ownership `json:"owner,omitempty"`
-	ResourceURI string    `json:"resource_uri,omitempty"`
-	Rules       []ACLRule `json:"rules,omitempty"`
-	UUID        string    `json:"uuid"`
+	Meta        map[string]interface{} `json:"meta,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Owner       Ownership              `json:"owner,omitempty"`
+	ResourceURI string                 `json:"resource_uri,omitempty"`
+	Rules       []ACLRule              `json:"rules,omitempty"`
+	UUID        string                 `json:"uuid"`
 }
 
+// ACLRule represents a CloudSigma ACL rule.
 type ACLRule struct {
 	Permission string `json:"permission,omitempty"`
 }
 
+// ACLCreateRequest represents a request to create an ACL.
 type ACLCreateRequest struct {
 	ACLs []ACL `json:"objects"`
 }
 
+// ACLCreateRequest represents a request to update an ACL.
 type ACLUpdateRequest struct {
 	*ACL
 }
@@ -35,6 +43,9 @@ type aclsRoot struct {
 	ACLs []ACL `json:"objects"`
 }
 
+// List provides a lit of ACLs defined by the authenticated user.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#listing
 func (s *ACLsService) List(ctx context.Context) ([]ACL, *Response, error) {
 	path := fmt.Sprintf("%v/", aclsBasePath)
 
@@ -55,6 +66,9 @@ func (s *ACLsService) List(ctx context.Context) ([]ACL, *Response, error) {
 	return root.ACLs, resp, nil
 }
 
+// Get provides detailed information for an ACL identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#list-single-acl
 func (s *ACLsService) Get(ctx context.Context, uuid string) (*ACL, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -76,6 +90,9 @@ func (s *ACLsService) Get(ctx context.Context, uuid string) (*ACL, *Response, er
 	return acl, resp, nil
 }
 
+// Create makes a new ACL (or ACLs) with given payload.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#creating
 func (s *ACLsService) Create(ctx context.Context, aclCreateRequest *ACLCreateRequest) ([]ACL, *Response, error) {
 	if aclCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
@@ -97,6 +114,9 @@ func (s *ACLsService) Create(ctx context.Context, aclCreateRequest *ACLCreateReq
 	return root.ACLs, resp, nil
 }
 
+// Update edits an ACL identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#editing
 func (s *ACLsService) Update(ctx context.Context, uuid string, aclUpdateRequest *ACLUpdateRequest) (*ACL, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -121,6 +141,9 @@ func (s *ACLsService) Update(ctx context.Context, uuid string, aclUpdateRequest 
 	return acl, resp, nil
 }
 
+// Delete removes a single ACL identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#deleting
 func (s *ACLsService) Delete(ctx context.Context, uuid string) (*Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
