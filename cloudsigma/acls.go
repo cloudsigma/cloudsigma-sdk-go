@@ -43,7 +43,7 @@ type aclsRoot struct {
 	ACLs []ACL `json:"objects"`
 }
 
-// List provides a lit of ACLs defined by the authenticated user.
+// List provides a list of ACLs defined by the authenticated user.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#listing
 func (s *ACLsService) List(ctx context.Context) ([]ACL, *Response, error) {
