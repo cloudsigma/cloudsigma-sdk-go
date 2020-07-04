@@ -13,6 +13,7 @@ const profileBasePath = "profile"
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/profile.html
 type ProfileService service
 
+// Profile represents a CloudSigma profile.
 type Profile struct {
 	Address   string `json:"address,omitempty"`
 	Company   string `json:"company,omitempty"`
@@ -22,7 +23,7 @@ type Profile struct {
 	UUID      string `json:"uuid"`
 }
 
-// ProfileUpdateRequest represents a request to update an ACL.
+// ProfileUpdateRequest represents a request to update a profile.
 type ProfileUpdateRequest struct {
 	*Profile
 }
