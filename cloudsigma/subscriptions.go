@@ -8,8 +8,12 @@ import (
 
 const subscriptionsBasePath = "subscriptions"
 
+// SubscriptionsService handles communication with the subscriptions related methods of the CloudSigma API.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html
 type SubscriptionsService service
 
+// Subscription represents a CloudSigma subscription.
 type Subscription struct {
 	Amount      string `json:"amount,omitempty"`
 	AutoRenew   bool   `json:"auto_renew,omitempty"`
@@ -24,6 +28,7 @@ type Subscription struct {
 	UUID        string `json:"uuid"`
 }
 
+// SubscriptionCreateRequest represents a request to create a subscription.
 type SubscriptionCreateRequest struct {
 	Subscriptions []Subscription `json:"objects"`
 }
@@ -33,6 +38,9 @@ type subscriptionsRoot struct {
 	Subscriptions []Subscription `json:"objects,omitempty"`
 }
 
+// List provides a list of subscriptions of the user.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html#listing
 func (s *SubscriptionsService) List(ctx context.Context) ([]Subscription, *Response, error) {
 	path := fmt.Sprintf("%v/", subscriptionsBasePath)
 
@@ -53,6 +61,9 @@ func (s *SubscriptionsService) List(ctx context.Context) ([]Subscription, *Respo
 	return root.Subscriptions, resp, nil
 }
 
+// Create makes a new subscription with given payload.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html#creating
 func (s *SubscriptionsService) Create(ctx context.Context, subscriptionCreateRequest *SubscriptionCreateRequest) ([]Subscription, *Response, error) {
 	if subscriptionCreateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed

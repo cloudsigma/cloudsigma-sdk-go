@@ -33,7 +33,7 @@ type ACLCreateRequest struct {
 	ACLs []ACL `json:"objects"`
 }
 
-// ACLCreateRequest represents a request to update an ACL.
+// ACLUpdateRequest represents a request to update an ACL.
 type ACLUpdateRequest struct {
 	*ACL
 }

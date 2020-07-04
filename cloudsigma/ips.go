@@ -29,6 +29,9 @@ type ipsRoot struct {
 	IPs  []IP  `json:"objects"`
 }
 
+// List provides a list of IPs to which the authenticated user has access.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#id2
 func (s *IPsService) List(ctx context.Context) ([]IP, *Response, error) {
 	path := fmt.Sprintf("%v/", ipsBasePath)
 

@@ -8,8 +8,12 @@ import (
 
 const licensesBasePath = "licenses"
 
+// LicensesService handles communication with the license related methods of the CloudSigma API.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/billing.html#licenses-list
 type LicensesService service
 
+// License represents a CloudSigma license.
 type License struct {
 	Burstable   bool   `json:"burstable,omitempty"`
 	LongName    string `json:"long_name,omitempty"`
@@ -24,6 +28,9 @@ type licensesRoot struct {
 	Licenses []License `json:"objects"`
 }
 
+// List  provides a list of licenses available on the cloud.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/billing.html#licenses-list
 func (s *LicensesService) List(ctx context.Context) ([]License, *Response, error) {
 	path := fmt.Sprintf("%v/", licensesBasePath)
 

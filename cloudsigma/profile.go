@@ -8,6 +8,9 @@ import (
 
 const profileBasePath = "profile"
 
+// ProfileService handles communication with the profile related methods of the CloudSigma API.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/profile.html
 type ProfileService service
 
 type Profile struct {
@@ -19,10 +22,14 @@ type Profile struct {
 	UUID      string `json:"uuid"`
 }
 
+// ProfileUpdateRequest represents a request to update an ACL.
 type ProfileUpdateRequest struct {
 	*Profile
 }
 
+// Get provides information for an user profile.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/profile.html#listing
 func (s *ProfileService) Get(ctx context.Context) (*Profile, *Response, error) {
 	path := fmt.Sprintf("%v/", profileBasePath)
 
@@ -40,6 +47,9 @@ func (s *ProfileService) Get(ctx context.Context) (*Profile, *Response, error) {
 	return profile, resp, nil
 }
 
+// Update edits a user profile.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/profile.html#editing
 func (s *ProfileService) Update(ctx context.Context, profileUpdateRequest *ProfileUpdateRequest) (*Profile, *Response, error) {
 	if profileUpdateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
