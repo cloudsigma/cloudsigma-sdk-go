@@ -16,7 +16,7 @@ type KeypairsService service
 // Keypair represents a CloudSigma keypair (ssh keys).
 type Keypair struct {
 	Fingerprint string `json:"fingerprint,omitempty"`
-	Name        string `json:"name"`
+	Name        string `json:"name,omitempty"`
 	PrivateKey  string `json:"private_key,omitempty"`
 	PublicKey   string `json:"public_key,omitempty"`
 	ResourceURI string `json:"resource_key,omitempty"`
@@ -40,7 +40,7 @@ type keypairsRoot struct {
 
 // List provides a list of keypairs.
 //
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#listing
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
 func (s *KeypairsService) List(ctx context.Context) ([]Keypair, *Response, error) {
 	path := fmt.Sprintf("%v/", keypairsBasePath)
 
