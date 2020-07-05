@@ -24,8 +24,8 @@ type License struct {
 }
 
 type licensesRoot struct {
-	Meta     *Meta     `json:"meta,omitempty"`
 	Licenses []License `json:"objects"`
+	Meta     *Meta     `json:"meta,omitempty"`
 }
 
 // List  provides a list of licenses available on the cloud.

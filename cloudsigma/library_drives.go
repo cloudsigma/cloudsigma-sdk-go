@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-const libdriveBasePath = "libdrives"
+const libdrivesBasePath = "libdrives"
 
 // LibraryDrivesService handles communication with the library drives related
 // methods of the CloudSigma API.
@@ -47,7 +47,7 @@ type libraryDrivesRoot struct {
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#listing
 func (s *LibraryDrivesService) List(ctx context.Context) ([]LibraryDrive, *Response, error) {
-	path := fmt.Sprintf("%v/", libdriveBasePath)
+	path := fmt.Sprintf("%v/", libdrivesBasePath)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -74,7 +74,7 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", libdriveBasePath, uuid)
+	path := fmt.Sprintf("%v/%v", libdrivesBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -99,7 +99,7 @@ func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, cloneRequ
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v/action/?do=clone", libdriveBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/action/?do=clone", libdrivesBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodPost, path, nil)
 	if err != nil {

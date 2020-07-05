@@ -108,14 +108,26 @@ func TestLibraryDrives_Clone_emptyPayload(t *testing.T) {
 }
 
 func TestLibraryDrives_Clone_emptyUUID(t *testing.T) {
-	_, _, err := client.LibraryDrives.Clone(ctx, "", nil)
+	input := &LibraryDriveCloneRequest{
+		LibraryDrive: &LibraryDrive{
+			Size: 3221225472, // 3GB
+		},
+	}
+
+	_, _, err := client.LibraryDrives.Clone(ctx, "", input)
 
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
 }
 
 func TestLibraryDrives_Clone_invalidUUID(t *testing.T) {
-	_, _, err := client.LibraryDrives.Clone(ctx, "%", nil)
+	input := &LibraryDriveCloneRequest{
+		LibraryDrive: &LibraryDrive{
+			Size: 3221225472, // 3GB
+		},
+	}
+
+	_, _, err := client.LibraryDrives.Clone(ctx, "%", input)
 
 	assert.Error(t, err)
 }

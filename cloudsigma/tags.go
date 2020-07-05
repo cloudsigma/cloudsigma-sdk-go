@@ -15,17 +15,12 @@ type TagsService service
 
 // Tag represents a CloudSigma tag.
 type Tag struct {
-	Meta        TagMeta       `json:"meta,omitempty"`
-	Name        string        `json:"name,omitempty"`
-	Owner       Ownership     `json:"owner,omitempty"`
-	ResourceURI string        `json:"resource_uri,omitempty"`
-	Resources   []TagResource `json:"resources,omitempty"`
-	UUID        string        `json:"uuid"`
-}
-
-// TagMeta represents an object with meta information about the tag.
-type TagMeta struct {
-	Color string `json:"color,omitempty"`
+	Meta        map[string]interface{} `json:"meta,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Owner       Ownership              `json:"owner,omitempty"`
+	ResourceURI string                 `json:"resource_uri,omitempty"`
+	Resources   []TagResource          `json:"resources,omitempty"`
+	UUID        string                 `json:"uuid"`
 }
 
 // TagResource represents a resource assigned to the tag.
