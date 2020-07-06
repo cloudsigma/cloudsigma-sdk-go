@@ -19,7 +19,7 @@ type Keypair struct {
 	Name        string `json:"name,omitempty"`
 	PrivateKey  string `json:"private_key,omitempty"`
 	PublicKey   string `json:"public_key,omitempty"`
-	ResourceURI string `json:"resource_key,omitempty"`
+	ResourceURI string `json:"resource_uri,omitempty"`
 	UUID        string `json:"uuid,omitempty"`
 }
 

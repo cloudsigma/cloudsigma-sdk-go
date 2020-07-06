@@ -2,12 +2,11 @@ package cloudsigma
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 )
 
-const serverBasePath = "servers"
+const serversBasePath = "servers"
 
 // ServersService handles communication with the servers related methods of the CloudSigma API.
 //
@@ -16,74 +15,73 @@ type ServersService service
 
 // Server represents a CloudSigma server.
 type Server struct {
-	CPU         int           `json:"cpu"`
-	CPUType     string        `json:"cpu_type"`
-	Drives      []ServerDrive `json:"drive,omitempty"`
-	Memory      int           `json:"mem"`
-	Name        string        `json:"name"`
-	Owner       Ownership     `json:"owner"`
-	PublicKeys  []Ownership   `json:"pubkeys,omitempty"`
-	ResourceURI string        `json:"resource_uri"`
-	Runtime     Runtime       `json:"runtime,omitempty"`
-	Status      string        `json:"status,omitempty"`
-	UUID        string        `json:"uuid"`
-	VNCPassword string        `json:"vnc_password"`
+	CPU         int                   `json:"cpu,omitempty"`
+	CPUType     string                `json:"cpu_type,omitempty"`
+	Drives      []ServerAttachedDrive `json:"drive,omitempty"`
+	Hypervisor  string                `json:"hypervisor,omitempty"`
+	Memory      int                   `json:"mem,omitempty"`
+	Name        string                `json:"name,omitempty"`
+	Owner       Ownership             `json:"owner,omitempty"`
+	PublicKeys  []Keypair             `json:"pubkeys,omitempty"`
+	ResourceURI string                `json:"resource_uri,omitempty"`
+	SMP         int                   `json:"smp,omitempty"`
+	Status      string                `json:"status,omitempty"`
+	Tags        []Tag                 `json:"tags,omitempty"`
+	UUID        string                `json:"uuid,omitempty"`
+	VNCPassword string                `json:"vnc_password,omitempty"`
 }
 
-type ServerDrive struct {
-	BootOrder  int    `json:"boot_order"`
-	DevChannel string `json:"dev_channel"`
-	Device     string `json:"device"`
-	DriveUUID  string `json:"drive"`
+// ServerDrive represents a CloudSigma attached drive to server.
+type ServerAttachedDrive struct {
+	BootOrder  int    `json:"boot_order,omitempty"`
+	DevChannel string `json:"dev_channel,omitempty"`
+	Device     string `json:"device,omitempty"`
+	Drive      Drive  `json:"drive,omitempty"`
 }
 
-type Runtime struct {
-	RuntimeNICS []RuntimeNIC `json:"nics,omitempty"`
-}
-
-type RuntimeNIC struct {
-	InterfaceType string    `json:"interface_type,omitempty"`
-	IPv4          Ownership `json:"ip_v4,omitempty"`
-}
-
+// ServerAction represents a CloudSigma server action.
 type ServerAction struct {
 	Action string `json:"action,omitempty"`
 	Result string `json:"result,omitempty"`
 	UUID   string `json:"uuid,omitempty"`
 }
 
-type AttachDriveRequest struct {
-	CPU         int           `json:"cpu"`
-	CPUType     string        `json:"cpu_type"`
-	Drives      []ServerDrive `json:"drives"`
-	Memory      int           `json:"mem"`
-	Name        string        `json:"name"`
-	VNCPassword string        `json:"vnc_password"`
-}
-
+// ServerCreateRequest represents a request to create a server.
 type ServerCreateRequest struct {
-	CPU                 int      `json:"cpu"`
-	CPUType             string   `json:"cpu_type"`
-	CPUEnclavePageCache string   `json:"cpu_epc,omitempty"`
-	Memory              int      `json:"mem"`
-	Name                string   `json:"name"`
-	VNCPassword         string   `json:"vnc_password"`
-	NICS                []NIC    `json:"nics,omitempty"`
-	PublicKeys          []string `json:"pubkeys,omitempty"`
+	Servers []Server `json:"objects"`
 }
 
-type NIC struct {
-	IPv4Configuration IPConfiguration `json:"ip_v4_conf,omitempty"`
-	Model             string          `json:"model,omitempty"`
-}
-
-type IPConfiguration struct {
-	Configuration string `json:"conf,omitempty"`
-	IP            string `json:"ip,omitempty"`
+// ServerUpdateRequest represents a request to update a server.
+type ServerUpdateRequest struct {
+	*Server
 }
 
 type serversRoot struct {
+	Meta    *Meta    `json:"meta,omitempty"`
 	Servers []Server `json:"objects"`
+}
+
+// List provides a detailed list of servers to which the authenticated user has access.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#detailed-listing
+func (s *ServersService) List(ctx context.Context) ([]Server, *Response, error) {
+	path := fmt.Sprintf("%v/detail/", serversBasePath)
+
+	req, err := s.client.NewRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(serversRoot)
+	resp, err := s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
+
+	return root.Servers, resp, nil
 }
 
 // Get provides detailed information for server identified by uuid.
@@ -94,7 +92,7 @@ func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *Respon
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", serverBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", serversBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -113,40 +111,69 @@ func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *Respon
 // Create makes a new virtual server with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#creating
-func (s *ServersService) Create(ctx context.Context, serverCreateRequest *ServerCreateRequest) (*Server, *Response, error) {
-	if serverCreateRequest == nil {
+func (s *ServersService) Create(ctx context.Context, createRequest *ServerCreateRequest) ([]Server, *Response, error) {
+	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
-	path := fmt.Sprintf("%v/", serverBasePath)
+	path := fmt.Sprintf("%v/", serversBasePath)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, serverCreateRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, createRequest)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	root := new(serversRoot)
+	root := new(ServerCreateRequest)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	if len(root.Servers) > 1 {
-		return nil, resp, errors.New("root.Servers count cannot be more than 1")
-	}
-
-	return &root.Servers[0], resp, err
+	return root.Servers, resp, nil
 }
 
-// Delete removes a server together with it's all attached drives (recursive delete).
+// Update edits a server identified by uuid. Used also for attaching NIC’s
+// and drives to servers. Note that if a server is running, only name, meta,
+// and tags fields can be changed, and all other changes to the definition
+// of a running server will be ignored.
 //
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#delete-server-together-with-attached-drives-recursive-delete
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#editing
+func (s *ServersService) Update(ctx context.Context, uuid string, updateRequest *ServerUpdateRequest) (*Server, *Response, error) {
+	if uuid == "" {
+		return nil, nil, ErrEmptyArgument
+	}
+	if updateRequest == nil {
+		return nil, nil, ErrEmptyPayloadNotAllowed
+	}
+
+	path := fmt.Sprintf("%v/%v/", serversBasePath, uuid)
+
+	// by update UUID must be empty
+	updateRequest.UUID = ""
+
+	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	server := new(Server)
+	resp, err := s.client.Do(ctx, req, server)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return server, resp, nil
+}
+
+// Delete removes a single server identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#deleting
 func (s *ServersService) Delete(ctx context.Context, uuid string) (*Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v/?recurse=all_drives", serverBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", serversBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
@@ -156,48 +183,21 @@ func (s *ServersService) Delete(ctx context.Context, uuid string) (*Response, er
 	return s.client.Do(ctx, req, nil)
 }
 
-// ServerDrive edits a server with attaching drives to it.
-//
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#attach-a-drive
-func (s *ServersService) AttachDrive(ctx context.Context, serverUUID string, attachDriveRequest *AttachDriveRequest) (*Server, *Response, error) {
-	if serverUUID == "" {
-		return nil, nil, ErrEmptyArgument
-	}
-	if attachDriveRequest == nil {
-		return nil, nil, ErrEmptyPayloadNotAllowed
-	}
-
-	path := fmt.Sprintf("%v/%v/", serverBasePath, serverUUID)
-
-	req, err := s.client.NewRequest(http.MethodPut, path, attachDriveRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	serverWithDrives := new(Server)
-	resp, err := s.client.Do(ctx, req, serverWithDrives)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return serverWithDrives, resp, nil
-}
-
-// Start starts a server with specific UUID.
+// Start sends 'start' action and starts a server with specific uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#start
 func (s *ServersService) Start(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
 	return s.doAction(ctx, uuid, "start")
 }
 
-// Stop stops a server with specific UUID. This action is equivalent to pulling the power cord of a physical server.
+// Stop sends 'stop' action and stops a server with specific uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#stop
 func (s *ServersService) Stop(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
 	return s.doAction(ctx, uuid, "stop")
 }
 
-// Stop Sends an ACPI shutdowns to a server with specific UUID for a minute.
+// Shutdown sends an ACPI shutdowns to a server with specific UUID for a minute.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#acpi-shutdown
 func (s *ServersService) Shutdown(ctx context.Context, uuid string) (*ServerAction, *Response, error) {
@@ -209,7 +209,7 @@ func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*Se
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v/action/?do=%v", serverBasePath, uuid, action)
+	path := fmt.Sprintf("%v/%v/action/?do=%v", serversBasePath, uuid, action)
 
 	req, err := s.client.NewRequest(http.MethodPost, path, nil)
 	if err != nil {
