@@ -38,8 +38,7 @@ type TagCreateRequest struct {
 
 // TagUpdateRequest represents a request to update a tag.
 type TagUpdateRequest struct {
-	Name      string   `json:"name,omitempty"`
-	Resources []string `json:"resources,omitempty"`
+	*Tag
 }
 
 type tagsRoot struct {

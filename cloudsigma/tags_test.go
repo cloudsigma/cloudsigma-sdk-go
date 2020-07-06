@@ -101,7 +101,9 @@ func TestTags_Update(t *testing.T) {
 	defer teardown()
 
 	input := &TagUpdateRequest{
-		Name: "test tag v2",
+		Tag: &Tag{
+			Name: "test tag v2",
+		},
 	}
 	mux.HandleFunc("/tags/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		v := new(TagUpdateRequest)
@@ -123,7 +125,9 @@ func TestTags_Update(t *testing.T) {
 
 func TestTags_Update_emptyUUID(t *testing.T) {
 	input := &TagUpdateRequest{
-		Name: "test tag v2",
+		Tag: &Tag{
+			Name: "test tag v2",
+		},
 	}
 
 	_, _, err := client.Tags.Update(ctx, "", input)
@@ -134,7 +138,9 @@ func TestTags_Update_emptyUUID(t *testing.T) {
 
 func TestTags_Update_invalidUUID(t *testing.T) {
 	input := &TagUpdateRequest{
-		Name: "test tag v2",
+		Tag: &Tag{
+			Name: "test tag v2",
+		},
 	}
 
 	_, _, err := client.Tags.Update(ctx, "%", input)
