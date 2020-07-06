@@ -15,24 +15,24 @@ type ServersService service
 
 // Server represents a CloudSigma server.
 type Server struct {
-	CPU         int                   `json:"cpu,omitempty"`
-	CPUType     string                `json:"cpu_type,omitempty"`
-	Drives      []ServerAttachedDrive `json:"drive,omitempty"`
-	Hypervisor  string                `json:"hypervisor,omitempty"`
-	Memory      int                   `json:"mem,omitempty"`
-	Name        string                `json:"name,omitempty"`
-	Owner       Ownership             `json:"owner,omitempty"`
-	PublicKeys  []Keypair             `json:"pubkeys,omitempty"`
-	ResourceURI string                `json:"resource_uri,omitempty"`
-	SMP         int                   `json:"smp,omitempty"`
-	Status      string                `json:"status,omitempty"`
-	Tags        []Tag                 `json:"tags,omitempty"`
-	UUID        string                `json:"uuid,omitempty"`
-	VNCPassword string                `json:"vnc_password,omitempty"`
+	CPU         int           `json:"cpu,omitempty"`
+	CPUType     string        `json:"cpu_type,omitempty"`
+	Drives      []ServerDrive `json:"drive,omitempty"`
+	Hypervisor  string        `json:"hypervisor,omitempty"`
+	Memory      int           `json:"mem,omitempty"`
+	Name        string        `json:"name,omitempty"`
+	Owner       Ownership     `json:"owner,omitempty"`
+	PublicKeys  []Keypair     `json:"pubkeys,omitempty"`
+	ResourceURI string        `json:"resource_uri,omitempty"`
+	SMP         int           `json:"smp,omitempty"`
+	Status      string        `json:"status,omitempty"`
+	Tags        []Tag         `json:"tags,omitempty"`
+	UUID        string        `json:"uuid,omitempty"`
+	VNCPassword string        `json:"vnc_password,omitempty"`
 }
 
-// ServerDrive represents a CloudSigma attached drive to server.
-type ServerAttachedDrive struct {
+// ServerDrive represents a CloudSigma attached drive to a server.
+type ServerDrive struct {
 	BootOrder  int    `json:"boot_order,omitempty"`
 	DevChannel string `json:"dev_channel,omitempty"`
 	Device     string `json:"device,omitempty"`
@@ -54,6 +54,23 @@ type ServerCreateRequest struct {
 // ServerUpdateRequest represents a request to update a server.
 type ServerUpdateRequest struct {
 	*Server
+}
+
+// ServerAttachDriveRequest represents a request to attach a drive to a server.
+type ServerAttachDriveRequest struct {
+	CPU         int                 `json:"cpu"`
+	Drives      []ServerAttachDrive `json:"drives"`
+	Memory      int                 `json:"mem"`
+	Name        string              `json:"name"`
+	VNCPassword string              `json:"vnc_password"`
+}
+
+// ServerAttachDrive represents a drive used by ServerAttachDriveRequest.
+type ServerAttachDrive struct {
+	BootOrder  int    `json:"boot_order,omitempty"`
+	DevChannel string `json:"dev_channel,omitempty"`
+	Device     string `json:"device,omitempty"`
+	Drive      string `json:"drive,omitempty"`
 }
 
 type serversRoot struct {
@@ -152,6 +169,33 @@ func (s *ServersService) Update(ctx context.Context, uuid string, updateRequest 
 	updateRequest.UUID = ""
 
 	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	server := new(Server)
+	resp, err := s.client.Do(ctx, req, server)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return server, resp, nil
+}
+
+// AttachDrive edits a server and attaches a drive.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#attach-a-drive
+func (s *ServersService) AttachDrive(ctx context.Context, uuid string, attachRequest *ServerAttachDriveRequest) (*Server, *Response, error) {
+	if uuid == "" {
+		return nil, nil, ErrEmptyArgument
+	}
+	if attachRequest == nil {
+		return nil, nil, ErrEmptyPayloadNotAllowed
+	}
+
+	path := fmt.Sprintf("%v/%v/", serversBasePath, uuid)
+
+	req, err := s.client.NewRequest(http.MethodPut, path, attachRequest)
 	if err != nil {
 		return nil, nil, err
 	}
