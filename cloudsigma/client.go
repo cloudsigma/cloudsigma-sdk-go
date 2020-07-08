@@ -36,6 +36,7 @@ type Client struct {
 
 	ACLs             *ACLsService
 	Capabilities     *CapabilitiesService
+	CloudStatus      *CloudStatusService
 	Drives           *DrivesService
 	FirewallPolicies *FirewallPoliciesService
 	IPs              *IPsService
@@ -81,6 +82,7 @@ func NewBasicAuthClient(username, password string) *Client {
 
 	c.ACLs = (*ACLsService)(&c.common)
 	c.Capabilities = (*CapabilitiesService)(&c.common)
+	c.CloudStatus = (*CloudStatusService)(&c.common)
 	c.Drives = (*DrivesService)(&c.common)
 	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
