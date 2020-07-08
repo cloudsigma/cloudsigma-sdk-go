@@ -31,7 +31,7 @@ type CloudStatusFreeTier struct {
 	Memory int `json:"mem,omitempty"`
 }
 
-// CloudStatusFreeTier represents a CloudSigma cloud status monthly free tier.
+// CloudStatusFreeTierMonthly represents a CloudSigma cloud status monthly free tier.
 type CloudStatusFreeTierMonthly struct {
 	TX int `json:"tx,omitempty"`
 }
