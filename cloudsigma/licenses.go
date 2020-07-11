@@ -8,19 +8,23 @@ import (
 
 const licensesBasePath = "licenses"
 
-// LicensesService handles communication with the license related methods of the CloudSigma API.
+// LicensesService handles communication with the license related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/billing.html#licenses-list
 type LicensesService service
 
 // License represents a CloudSigma license.
 type License struct {
-	Burstable   bool   `json:"burstable,omitempty"`
-	LongName    string `json:"long_name,omitempty"`
-	Name        string `json:"name,omitempty"`
-	ResourceURI string `json:"resource_uri,omitempty"`
-	Type        string `json:"type,omitempty"`
-	UserMetric  string `json:"user_metric"`
+	Burstable                     bool   `json:"burstable,omitempty"`
+	Free                          string `json:"free,omitempty"`
+	InitialPurchaseRequirement    string `json:"initial_purchase_requirement,omitempty"`
+	LongName                      string `json:"long_name,omitempty"`
+	Name                          string `json:"name,omitempty"`
+	ResourceURI                   string `json:"resource_uri,omitempty"`
+	SubsequentPurchaseRequirement string `json:"subsequent_purchase_requirement,omitempty"`
+	Type                          string `json:"type,omitempty"`
+	UserMetric                    string `json:"user_metric"`
 }
 
 type licensesRoot struct {
