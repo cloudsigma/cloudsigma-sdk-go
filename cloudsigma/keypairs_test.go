@@ -35,7 +35,7 @@ func TestKeypairs_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/keypairs/long-uuid", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/keypairs/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		_, _ = fmt.Fprint(w, `{"name":"test key","uuid":"long-uuid"}`)
 	})

@@ -8,19 +8,23 @@ import (
 
 const keypairsBasePath = "keypairs"
 
-// KeypairsService handles communication with the keypairs (SSH keys) related methods of the Cloudsigma API.
+// KeypairsService handles communication with the keypairs (SSH keys) related
+// methods of the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html
 type KeypairsService service
 
 // Keypair represents a CloudSigma keypair (ssh keys).
 type Keypair struct {
-	Fingerprint string `json:"fingerprint,omitempty"`
-	Name        string `json:"name,omitempty"`
-	PrivateKey  string `json:"private_key,omitempty"`
-	PublicKey   string `json:"public_key,omitempty"`
-	ResourceURI string `json:"resource_uri,omitempty"`
-	UUID        string `json:"uuid,omitempty"`
+	Fingerprint   string                 `json:"fingerprint,omitempty"`
+	HasPrivateKey bool                   `json:"has_private_key,omitempty"`
+	Meta          map[string]interface{} `json:"meta,omitempty"`
+	Name          string                 `json:"name,omitempty"`
+	PrivateKey    string                 `json:"private_key,omitempty"`
+	PublicKey     string                 `json:"public_key,omitempty"`
+	ResourceURI   string                 `json:"resource_uri,omitempty"`
+	Tags          []Tag                  `json:"tags,omitempty"`
+	UUID          string                 `json:"uuid,omitempty"`
 }
 
 // KeypairCreateRequest represents a request to create a keypair.
@@ -69,7 +73,7 @@ func (s *KeypairsService) Get(ctx context.Context, uuid string) (*Keypair, *Resp
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", keypairsBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", keypairsBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -88,14 +92,14 @@ func (s *KeypairsService) Get(ctx context.Context, uuid string) (*Keypair, *Resp
 // Create makes a new keypair (or keypairs) with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#creating-a-keypair
-func (s *KeypairsService) Create(ctx context.Context, keypairCreateRequest *KeypairCreateRequest) ([]Keypair, *Response, error) {
-	if keypairCreateRequest == nil {
+func (s *KeypairsService) Create(ctx context.Context, createRequest *KeypairCreateRequest) ([]Keypair, *Response, error) {
+	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/", keypairsBasePath)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, keypairCreateRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, createRequest)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -112,17 +116,17 @@ func (s *KeypairsService) Create(ctx context.Context, keypairCreateRequest *Keyp
 // Update edits a keypair identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting
-func (s *KeypairsService) Update(ctx context.Context, uuid string, keypairUpdateRequest *KeypairUpdateRequest) (*Keypair, *Response, error) {
+func (s *KeypairsService) Update(ctx context.Context, uuid string, updateRequest *KeypairUpdateRequest) (*Keypair, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
-	if keypairUpdateRequest == nil {
+	if updateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/%v/", keypairsBasePath, uuid)
 
-	req, err := s.client.NewRequest(http.MethodPut, path, keypairUpdateRequest)
+	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
 	if err != nil {
 		return nil, nil, err
 	}
