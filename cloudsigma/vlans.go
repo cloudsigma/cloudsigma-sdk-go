@@ -22,7 +22,7 @@ type VLAN struct {
 	UUID         string                 `json:"uuid"`
 }
 
-// VLANSubscription represents a CLoudSigma subscription reference.
+// VLANSubscription represents a CloudSigma subscription reference.
 type VLANSubscription struct {
 	ID          int    `json:"id"`
 	ResourceURI string `json:"resource_uri,omitempty"`
