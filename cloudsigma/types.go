@@ -1,5 +1,12 @@
 package cloudsigma
 
+// DriveLicense represents a CloudSigma license attached to the drive.
+type DriveLicense struct {
+	Amount  int       `json:"amount,omitempty"`
+	License License   `json:"license,omitempty"`
+	User    Ownership `json:"user,omitempty"`
+}
+
 // Meta represents an object with meta information about the request.
 type Meta struct {
 	Limit      int `json:"limit,omitempty"`

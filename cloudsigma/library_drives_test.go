@@ -34,7 +34,7 @@ func TestLibraryDrives_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/libdrives/long-uuid", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/libdrives/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		_, _ = fmt.Fprint(w, `{"arch":"64","uuid":"long-uuid"}`)
 	})

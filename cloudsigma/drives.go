@@ -34,13 +34,6 @@ type Drive struct {
 	UUID            string                 `json:"uuid,omitempty"`
 }
 
-// DriveLicense represents a CloudSigma license attached to the drive.
-type DriveLicense struct {
-	Amount  int       `json:"amount,omitempty"`
-	License License   `json:"license,omitempty"`
-	User    Ownership `json:"user,omitempty"`
-}
-
 // DriveRuntime represents a CloudSigma runtime information of the drive.
 type DriveRuntime struct {
 	IsSnapshotable         bool   `json:"is_snapshotable,omitempty"`

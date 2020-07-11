@@ -16,21 +16,36 @@ type LibraryDrivesService service
 
 // LibraryDrive represents a CloudSigma library drive.
 type LibraryDrive struct {
-	Arch        string                 `json:"arch,omitempty"`
-	Description string                 `json:"description,omitempty"`
-	Favourite   bool                   `json:"favourite,omitempty"`
-	ImageType   string                 `json:"image_type,omitempty"`
-	Media       string                 `json:"media,omitempty"`
-	Meta        map[string]interface{} `json:"meta,omitempty"`
-	Name        string                 `json:"name,omitempty"`
-	OS          string                 `json:"os,omitempty"`
-	Paid        bool                   `json:"paid,omitempty"`
-	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Size        int                    `json:"size,omitempty"`
-	Status      string                 `json:"status,omitempty"`
-	StorageType string                 `json:"storage_type,omitempty"`
-	UUID        string                 `json:"uuid"`
-	Version     string                 `json:"version,omitempty"`
+	AllowMultimount   bool                   `json:"allow_multimount,omitempty"`
+	Arch              string                 `json:"arch,omitempty"`
+	Category          []string               `json:"category,omitempty"`
+	CloudInitService  string                 `json:"cloud_init_service,omitempty"`
+	CreatedAt         string                 `json:"created_at,omitempty"`
+	DefaultAuthMethod string                 `json:"default_auth_method,omitempty"`
+	DefaultPassword   string                 `json:"default_pass,omitempty"`
+	DefaultUser       string                 `json:"default_user,omitempty"`
+	Deprecated        bool                   `json:"deprecated,omitempty"`
+	Description       string                 `json:"description,omitempty"`
+	Distribution      string                 `json:"distribution,omitempty"`
+	Favourite         bool                   `json:"favourite,omitempty"`
+	ImageType         string                 `json:"image_type,omitempty"`
+	InstallNotes      string                 `json:"install_notes,omitempty"`
+	Licenses          []DriveLicense         `json:"licenses,omitempty"`
+	Media             string                 `json:"media,omitempty"`
+	Meta              map[string]interface{} `json:"meta,omitempty"`
+	MountedOn         []Ownership            `json:"mounted_on,omitempty"`
+	Name              string                 `json:"name,omitempty"`
+	OS                string                 `json:"os,omitempty"`
+	Paid              bool                   `json:"paid,omitempty"`
+	RemoteSnapshots   []Ownership            `json:"remote_snapshots,omitempty"`
+	ResourceURI       string                 `json:"resource_uri,omitempty"`
+	Size              int                    `json:"size,omitempty"`
+	Status            string                 `json:"status,omitempty"`
+	StorageType       string                 `json:"storage_type,omitempty"`
+	Tags              []Tag                  `json:"tags,omitempty"`
+	URL               string                 `json:"url,omitempty"`
+	UUID              string                 `json:"uuid"`
+	Version           string                 `json:"version,omitempty"`
 }
 
 // LibraryDriveCloneRequest represents a request to clone a library drive.
@@ -74,7 +89,7 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", libdrivesBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", libdrivesBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
