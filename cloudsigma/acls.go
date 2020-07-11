@@ -8,7 +8,8 @@ import (
 
 const aclsBasePath = "acls"
 
-// ACLsService handles communication with the ACL (Access Control Lists) related methods of the CloudSigma API.
+// ACLsService handles communication with the ACL (Access Control Lists)
+// related methods of the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html
 type ACLsService service

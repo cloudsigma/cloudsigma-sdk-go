@@ -8,7 +8,8 @@ import (
 
 const cloudStatusBasePath = "cloud_status"
 
-// CloudStatusService handles communication with the cloud status related methods of the CloudSigma API.
+// CloudStatusService handles communication with the cloud status related
+// methods of the CloudSigma API.
 type CloudStatusService service
 
 // CloudStatus represents a CloudSigma cloud status.
@@ -31,7 +32,8 @@ type CloudStatusFreeTier struct {
 	Memory int `json:"mem,omitempty"`
 }
 
-// CloudStatusFreeTierMonthly represents a CloudSigma cloud status monthly free tier.
+// CloudStatusFreeTierMonthly represents a CloudSigma cloud status monthly
+// free tier.
 type CloudStatusFreeTierMonthly struct {
 	TX int `json:"tx,omitempty"`
 }

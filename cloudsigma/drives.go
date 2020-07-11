@@ -8,23 +8,44 @@ import (
 
 const drivesBasePath = "drives"
 
-// DrivesService handles communication with the drives related methods of the CloudSigma API.
+// DrivesService handles communication with the drives related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html
 type DrivesService service
 
 // Drive represents a CloudSigma drive.
 type Drive struct {
-	Media       string                 `json:"media,omitempty"`
-	Meta        map[string]interface{} `json:"meta,omitempty"`
-	Name        string                 `json:"name,omitempty"`
-	Owner       Ownership              `json:"owner,omitempty"`
-	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Size        int                    `json:"size,omitempty"`
-	Status      string                 `json:"status,omitempty"`
-	StorageType string                 `json:"storage_type,omitempty"`
-	Tags        []Tag                  `json:"tags,omitempty"`
-	UUID        string                 `json:"uuid,omitempty"`
+	AllowMultimount bool                   `json:"allow_multimount,omitempty"`
+	Licenses        []DriveLicense         `json:"licenses,omitempty"`
+	Media           string                 `json:"media,omitempty"`
+	Meta            map[string]interface{} `json:"meta,omitempty"`
+	MountedOn       []Ownership            `json:"mounted_on,omitempty"`
+	Name            string                 `json:"name,omitempty"`
+	Owner           Ownership              `json:"owner,omitempty"`
+	RemoteSnapshots []Ownership            `json:"remote_snapshots,omitempty"`
+	ResourceURI     string                 `json:"resource_uri,omitempty"`
+	Runtime         DriveRuntime           `json:"runtime,omitempty"`
+	Size            int                    `json:"size,omitempty"`
+	Snapshots       []Ownership            `json:"snapshots,omitempty"`
+	Status          string                 `json:"status,omitempty"`
+	StorageType     string                 `json:"storage_type,omitempty"`
+	Tags            []Tag                  `json:"tags,omitempty"`
+	UUID            string                 `json:"uuid,omitempty"`
+}
+
+// DriveLicense represents a CloudSigma license attached to the drive.
+type DriveLicense struct {
+	Amount  int       `json:"amount,omitempty"`
+	License License   `json:"license,omitempty"`
+	User    Ownership `json:"user,omitempty"`
+}
+
+// DriveRuntime represents a CloudSigma runtime information of the drive.
+type DriveRuntime struct {
+	IsSnapshotable         bool   `json:"is_snapshotable,omitempty"`
+	SnapshotsAllocatedSize int    `json:"snapshots_allocated_size,omitempty"`
+	StorageType            string `json:"storage_type,omitempty"`
 }
 
 // DriveCreateRequest represents a request to create a drive.
@@ -120,7 +141,8 @@ func (s *DrivesService) Create(ctx context.Context, createRequest *DriveCreateRe
 }
 
 // Update edits a drive identified by uuid. Note that if the drive is mounted
-// on a running server only the name, meta, tags, and allow_multimount can be changed.
+// on a running server only the name, meta, tags, and allow_multimount can be
+// changed.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#editing
 func (s *DrivesService) Update(ctx context.Context, uuid string, updateRequest *DriveUpdateRequest) (*Drive, *Response, error) {
