@@ -8,20 +8,23 @@ import (
 
 const ipsBasePath = "ips"
 
-// IPsService handles communication with the IPs related methods of the CloudSigma API.
+// IPsService handles communication with the IPs related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#ips
 type IPsService service
 
 // IP represents a CloudSigma IP address.
 type IP struct {
-	Gateway     string    `json:"gateway,omitempty"`
-	Nameservers []string  `json:"nameservers,omitempty"`
-	Netmask     int       `json:"netmask,omitempty"`
-	Owner       Ownership `json:"owner,omitempty"`
-	ResourceURI string    `json:"resource_uri,omitempty"`
-	Tags        []Tag     `json:"tags,omitempty"`
-	UUID        string    `json:"uuid"`
+	Gateway     string                 `json:"gateway,omitempty"`
+	Meta        map[string]interface{} `json:"meta,omitempty"`
+	Nameservers []string               `json:"nameservers,omitempty"`
+	Netmask     int                    `json:"netmask,omitempty"`
+	Owner       Ownership              `json:"owner,omitempty"`
+	ResourceURI string                 `json:"resource_uri,omitempty"`
+	Server      Ownership              `json:"server,omitempty"`
+	Tags        []Tag                  `json:"tags,omitempty"`
+	UUID        string                 `json:"uuid"`
 }
 
 type ipsRoot struct {
@@ -33,7 +36,7 @@ type ipsRoot struct {
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#id2
 func (s *IPsService) List(ctx context.Context) ([]IP, *Response, error) {
-	path := fmt.Sprintf("%v/", ipsBasePath)
+	path := fmt.Sprintf("%v/detail/", ipsBasePath)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -60,7 +63,7 @@ func (s *IPsService) Get(ctx context.Context, uuid string) (*IP, *Response, erro
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", ipsBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", ipsBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {

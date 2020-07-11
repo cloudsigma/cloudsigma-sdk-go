@@ -34,7 +34,7 @@ func TestIPs_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/ips/185.12.6.243", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ips/185.12.6.243/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		_, _ = fmt.Fprint(w, `{"gateway":"185.12.6.1","uuid":"185.12.6.243"}`)
 	})
