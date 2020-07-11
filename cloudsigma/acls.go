@@ -20,6 +20,7 @@ type ACL struct {
 	Owner       Ownership              `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Rules       []ACLRule              `json:"rules,omitempty"`
+	Tags        []Tag                  `json:"tags,omitempty"`
 	UUID        string                 `json:"uuid"`
 }
 
@@ -74,7 +75,7 @@ func (s *ACLsService) Get(ctx context.Context, uuid string) (*ACL, *Response, er
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", aclsBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", aclsBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -93,14 +94,14 @@ func (s *ACLsService) Get(ctx context.Context, uuid string) (*ACL, *Response, er
 // Create makes a new ACL (or ACLs) with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#creating
-func (s *ACLsService) Create(ctx context.Context, aclCreateRequest *ACLCreateRequest) ([]ACL, *Response, error) {
-	if aclCreateRequest == nil {
+func (s *ACLsService) Create(ctx context.Context, createRequest *ACLCreateRequest) ([]ACL, *Response, error) {
+	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/", aclsBasePath)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, aclCreateRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, createRequest)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -117,17 +118,17 @@ func (s *ACLsService) Create(ctx context.Context, aclCreateRequest *ACLCreateReq
 // Update edits an ACL identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#editing
-func (s *ACLsService) Update(ctx context.Context, uuid string, aclUpdateRequest *ACLUpdateRequest) (*ACL, *Response, error) {
+func (s *ACLsService) Update(ctx context.Context, uuid string, updateRequest *ACLUpdateRequest) (*ACL, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
-	if aclUpdateRequest == nil {
+	if updateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/%v/", aclsBasePath, uuid)
 
-	req, err := s.client.NewRequest(http.MethodPut, path, aclUpdateRequest)
+	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
 	if err != nil {
 		return nil, nil, err
 	}
