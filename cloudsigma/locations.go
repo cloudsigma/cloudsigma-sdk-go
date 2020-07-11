@@ -8,7 +8,8 @@ import (
 
 const locationsBasePath = "locations"
 
-// LocationsService handles communication with the location related methods of the CloudSigma API.
+// LocationsService handles communication with the location related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/locations.html
 type LocationsService service
@@ -32,8 +33,8 @@ type locationsRoot struct {
 	Meta      *Meta      `json:"meta,omitempty"`
 }
 
-// List provides a list of the currently available CloudSigma locations, and information on specific urls,
-// such as the websockets and upload urls.
+// List provides a list of the currently available CloudSigma locations,
+// and information on specific urls, such as the websockets and upload urls.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/locations.html#locations
 func (s *LocationsService) List(ctx context.Context) ([]Location, *Response, error) {

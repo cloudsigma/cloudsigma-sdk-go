@@ -18,7 +18,7 @@ type ACLsService service
 type ACL struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       Ownership              `json:"owner,omitempty"`
+	Owner       ResourceLink           `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Rules       []ACLRule              `json:"rules,omitempty"`
 	Tags        []Tag                  `json:"tags,omitempty"`

@@ -18,10 +18,10 @@ type FirewallPoliciesService service
 type FirewallPolicy struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       Ownership              `json:"owner,omitempty"`
+	Owner       ResourceLink           `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Rules       []FirewallPolicyRule   `json:"rules,omitempty"`
-	Servers     []Ownership            `json:"servers,omitempty"`
+	Servers     []ResourceLink         `json:"servers,omitempty"`
 	Tags        []Tag                  `json:"tags,omitempty"`
 	UUID        string                 `json:"uuid,omitempty"`
 }

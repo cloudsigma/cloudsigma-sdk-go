@@ -17,7 +17,7 @@ type TagsService service
 type Tag struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       Ownership              `json:"owner,omitempty"`
+	Owner       ResourceLink           `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Resources   []TagResource          `json:"resources,omitempty"`
 	UUID        string                 `json:"uuid"`
@@ -25,10 +25,10 @@ type Tag struct {
 
 // TagResource represents a resource assigned to the tag.
 type TagResource struct {
-	Owner        Ownership `json:"owner,omitempty"`
-	ResourceType string    `json:"res_type,omitempty"`
-	ResourceURI  string    `json:"resource_uri,omitempty"`
-	UUID         string    `json:"uuid"`
+	Owner        ResourceLink `json:"owner,omitempty"`
+	ResourceType string       `json:"res_type,omitempty"`
+	ResourceURI  string       `json:"resource_uri,omitempty"`
+	UUID         string       `json:"uuid"`
 }
 
 // TagCreateRequest represents a request to create a tag.

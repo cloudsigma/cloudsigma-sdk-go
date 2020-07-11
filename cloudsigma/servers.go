@@ -21,7 +21,7 @@ type Server struct {
 	Hypervisor  string        `json:"hypervisor,omitempty"`
 	Memory      int           `json:"mem,omitempty"`
 	Name        string        `json:"name,omitempty"`
-	Owner       Ownership     `json:"owner,omitempty"`
+	Owner       ResourceLink  `json:"owner,omitempty"`
 	PublicKeys  []Keypair     `json:"pubkeys,omitempty"`
 	ResourceURI string        `json:"resource_uri,omitempty"`
 	SMP         int           `json:"smp,omitempty"`

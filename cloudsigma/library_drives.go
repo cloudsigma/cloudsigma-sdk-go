@@ -33,11 +33,11 @@ type LibraryDrive struct {
 	Licenses          []DriveLicense         `json:"licenses,omitempty"`
 	Media             string                 `json:"media,omitempty"`
 	Meta              map[string]interface{} `json:"meta,omitempty"`
-	MountedOn         []Ownership            `json:"mounted_on,omitempty"`
+	MountedOn         []ResourceLink         `json:"mounted_on,omitempty"`
 	Name              string                 `json:"name,omitempty"`
 	OS                string                 `json:"os,omitempty"`
 	Paid              bool                   `json:"paid,omitempty"`
-	RemoteSnapshots   []Ownership            `json:"remote_snapshots,omitempty"`
+	RemoteSnapshots   []ResourceLink         `json:"remote_snapshots,omitempty"`
 	ResourceURI       string                 `json:"resource_uri,omitempty"`
 	Size              int                    `json:"size,omitempty"`
 	Status            string                 `json:"status,omitempty"`

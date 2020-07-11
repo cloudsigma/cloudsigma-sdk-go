@@ -11,14 +11,14 @@ const snapshotsBasePath = "snapshots"
 type SnapshotsService service
 
 type Snapshot struct {
-	Drive       Drive     `json:"drive,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Owner       Ownership `json:"owner,omitempty"`
-	ResourceURI string    `json:"resource_uri,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Tags        []Tag     `json:"tags,omitempty"`
-	Timestamp   string    `json:"timestamp,omitempty"`
-	UUID        string    `json:"uuid,omitempty"`
+	Drive       Drive        `json:"drive,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Owner       ResourceLink `json:"owner,omitempty"`
+	ResourceURI string       `json:"resource_uri,omitempty"`
+	Status      string       `json:"status,omitempty"`
+	Tags        []Tag        `json:"tags,omitempty"`
+	Timestamp   string       `json:"timestamp,omitempty"`
+	UUID        string       `json:"uuid,omitempty"`
 }
 
 type SnapshotCreateRequest struct {

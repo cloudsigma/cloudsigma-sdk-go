@@ -20,14 +20,14 @@ type Drive struct {
 	Licenses        []DriveLicense         `json:"licenses,omitempty"`
 	Media           string                 `json:"media,omitempty"`
 	Meta            map[string]interface{} `json:"meta,omitempty"`
-	MountedOn       []Ownership            `json:"mounted_on,omitempty"`
+	MountedOn       []ResourceLink         `json:"mounted_on,omitempty"`
 	Name            string                 `json:"name,omitempty"`
-	Owner           Ownership              `json:"owner,omitempty"`
-	RemoteSnapshots []Ownership            `json:"remote_snapshots,omitempty"`
+	Owner           ResourceLink           `json:"owner,omitempty"`
+	RemoteSnapshots []ResourceLink         `json:"remote_snapshots,omitempty"`
 	ResourceURI     string                 `json:"resource_uri,omitempty"`
 	Runtime         DriveRuntime           `json:"runtime,omitempty"`
 	Size            int                    `json:"size,omitempty"`
-	Snapshots       []Ownership            `json:"snapshots,omitempty"`
+	Snapshots       []ResourceLink         `json:"snapshots,omitempty"`
 	Status          string                 `json:"status,omitempty"`
 	StorageType     string                 `json:"storage_type,omitempty"`
 	Tags            []Tag                  `json:"tags,omitempty"`

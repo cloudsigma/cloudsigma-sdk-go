@@ -20,9 +20,9 @@ type IP struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Nameservers []string               `json:"nameservers,omitempty"`
 	Netmask     int                    `json:"netmask,omitempty"`
-	Owner       Ownership              `json:"owner,omitempty"`
+	Owner       ResourceLink           `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Server      Ownership              `json:"server,omitempty"`
+	Server      ResourceLink           `json:"server,omitempty"`
 	Tags        []Tag                  `json:"tags,omitempty"`
 	UUID        string                 `json:"uuid"`
 }
