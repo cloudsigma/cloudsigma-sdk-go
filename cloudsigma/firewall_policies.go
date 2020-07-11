@@ -16,11 +16,14 @@ type FirewallPoliciesService service
 
 // FirewallPolicy represents a CloudSigma firewall policy.
 type FirewallPolicy struct {
-	Name        string               `json:"name,omitempty"`
-	Owner       Ownership            `json:"owner,omitempty"`
-	ResourceURI string               `json:"resource_uri,omitempty"`
-	Rules       []FirewallPolicyRule `json:"rules,omitempty"`
-	UUID        string               `json:"uuid,omitempty"`
+	Meta        map[string]interface{} `json:"meta,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Owner       Ownership              `json:"owner,omitempty"`
+	ResourceURI string                 `json:"resource_uri,omitempty"`
+	Rules       []FirewallPolicyRule   `json:"rules,omitempty"`
+	Servers     []Ownership            `json:"servers,omitempty"`
+	Tags        []Tag                  `json:"tags,omitempty"`
+	UUID        string                 `json:"uuid,omitempty"`
 }
 
 // FirewallPolicyRule represents a CloudSigma firewall policy rule.
@@ -50,7 +53,8 @@ type fwpoliciesRoot struct {
 	FirewallPolicies []FirewallPolicy `json:"objects"`
 }
 
-// List provides a detailed list of firewall policies to which the authenticated user has access.
+// List provides a detailed list of firewall policies to which the authenticated
+// user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/fwpolicies.html#detailed-listing
 func (s *FirewallPoliciesService) List(ctx context.Context) ([]FirewallPolicy, *Response, error) {
@@ -81,7 +85,7 @@ func (s *FirewallPoliciesService) Get(ctx context.Context, uuid string) (*Firewa
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", fwpoliciesBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", fwpoliciesBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
