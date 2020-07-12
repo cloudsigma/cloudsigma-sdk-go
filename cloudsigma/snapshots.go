@@ -8,23 +8,32 @@ import (
 
 const snapshotsBasePath = "snapshots"
 
+// SnapshotsService handles communication with the snapshot related methods of
+// the CloudSigma API.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html
 type SnapshotsService service
 
+// Snapshot represents a CloudSigma snapshot.
 type Snapshot struct {
-	Drive       Drive        `json:"drive,omitempty"`
-	Name        string       `json:"name,omitempty"`
-	Owner       ResourceLink `json:"owner,omitempty"`
-	ResourceURI string       `json:"resource_uri,omitempty"`
-	Status      string       `json:"status,omitempty"`
-	Tags        []Tag        `json:"tags,omitempty"`
-	Timestamp   string       `json:"timestamp,omitempty"`
-	UUID        string       `json:"uuid,omitempty"`
+	AllocatedSize int                    `json:"allocated_size,omitempty"`
+	Drive         Drive                  `json:"drive,omitempty"`
+	Meta          map[string]interface{} `json:"meta,omitempty"`
+	Name          string                 `json:"name,omitempty"`
+	Owner         ResourceLink           `json:"owner,omitempty"`
+	ResourceURI   string                 `json:"resource_uri,omitempty"`
+	Status        string                 `json:"status,omitempty"`
+	Tags          []Tag                  `json:"tags,omitempty"`
+	Timestamp     string                 `json:"timestamp,omitempty"`
+	UUID          string                 `json:"uuid,omitempty"`
 }
 
+// SnapshotCreateRequest represents a request to create a snapshot.
 type SnapshotCreateRequest struct {
 	Snapshots []Snapshot `json:"objects"`
 }
 
+// SnapshotUpdateRequest represents a request to update a snapshot.
 type SnapshotUpdateRequest struct {
 	*Snapshot
 }
@@ -34,6 +43,10 @@ type snapshotsRoot struct {
 	Snapshots []Snapshot `json:"objects"`
 }
 
+// List provides a detailed list of snapshots to which the authenticated user
+// has access.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#detailed-listing
 func (s *SnapshotsService) List(ctx context.Context) ([]Snapshot, *Response, error) {
 	path := fmt.Sprintf("%v/detail/", snapshotsBasePath)
 
@@ -54,6 +67,9 @@ func (s *SnapshotsService) List(ctx context.Context) ([]Snapshot, *Response, err
 	return root.Snapshots, resp, nil
 }
 
+// Get provides detailed information for snapshot identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#list-single-snapshot
 func (s *SnapshotsService) Get(ctx context.Context, uuid string) (*Snapshot, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -75,6 +91,9 @@ func (s *SnapshotsService) Get(ctx context.Context, uuid string) (*Snapshot, *Re
 	return snapshot, resp, nil
 }
 
+// Create makes a new snapshot with given payload.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#creating
 func (s *SnapshotsService) Create(ctx context.Context, createRequest *SnapshotCreateRequest) ([]Snapshot, *Response, error) {
 	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
@@ -96,6 +115,9 @@ func (s *SnapshotsService) Create(ctx context.Context, createRequest *SnapshotCr
 	return root.Snapshots, resp, nil
 }
 
+// Update edits a snapshot identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#editing
 func (s *SnapshotsService) Update(ctx context.Context, uuid string, updateRequest *SnapshotUpdateRequest) (*Snapshot, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -123,6 +145,9 @@ func (s *SnapshotsService) Update(ctx context.Context, uuid string, updateReques
 	return snapshot, resp, nil
 }
 
+// Delete removes a snapshot identified by uuid.
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#deleting
 func (s *SnapshotsService) Delete(ctx context.Context, uuid string) (*Response, error) {
 	if uuid == "" {
 		return nil, ErrEmptyArgument
