@@ -16,17 +16,20 @@ type SubscriptionsService service
 
 // Subscription represents a CloudSigma subscription.
 type Subscription struct {
-	Amount      string `json:"amount,omitempty"`
-	AutoRenew   bool   `json:"auto_renew,omitempty"`
-	FreeTier    bool   `json:"free_tier,omitempty"`
-	ID          string `json:"id,omitempty"`
-	Period      string `json:"period,omitempty"`
-	Price       string `json:"price,omitempty"`
-	Remaining   string `json:"remaining,omitempty"`
-	Resource    string `json:"resource,omitempty"`
-	ResourceURI string `json:"resource_uri,omitempty"`
-	Status      string `json:"status,omitempty"`
-	UUID        string `json:"uuid,omitempty"`
+	Amount           string `json:"amount,omitempty"`
+	AutoRenew        bool   `json:"auto_renew,omitempty"`
+	EndTime          string `json:"end_time,omitempty"`
+	FreeTier         bool   `json:"free_tier,omitempty"`
+	ID               string `json:"id,omitempty"`
+	Period           string `json:"period,omitempty"`
+	Price            string `json:"price,omitempty"`
+	Remaining        string `json:"remaining,omitempty"`
+	Resource         string `json:"resource,omitempty"`
+	ResourceURI      string `json:"resource_uri,omitempty"`
+	StartTime        string `json:"start_time,omitempty"`
+	Status           string `json:"status,omitempty"`
+	SubscribedObject string `json:"subscribed_object,omitempty"`
+	UUID             string `json:"uuid,omitempty"`
 }
 
 // SubscriptionCreateRequest represents a request to create a subscription.
