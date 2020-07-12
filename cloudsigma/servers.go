@@ -8,35 +8,59 @@ import (
 
 const serversBasePath = "servers"
 
-// ServersService handles communication with the servers related methods of the CloudSigma API.
+// ServersService handles communication with the servers related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html
 type ServersService service
 
 // Server represents a CloudSigma server.
 type Server struct {
-	CPU         int           `json:"cpu,omitempty"`
-	CPUType     string        `json:"cpu_type,omitempty"`
-	Drives      []ServerDrive `json:"drive,omitempty"`
-	Hypervisor  string        `json:"hypervisor,omitempty"`
-	Memory      int           `json:"mem,omitempty"`
-	Name        string        `json:"name,omitempty"`
-	Owner       ResourceLink  `json:"owner,omitempty"`
-	PublicKeys  []Keypair     `json:"pubkeys,omitempty"`
-	ResourceURI string        `json:"resource_uri,omitempty"`
-	SMP         int           `json:"smp,omitempty"`
-	Status      string        `json:"status,omitempty"`
-	Tags        []Tag         `json:"tags,omitempty"`
-	UUID        string        `json:"uuid,omitempty"`
-	VNCPassword string        `json:"vnc_password,omitempty"`
+	AutoStart          bool                   `json:"auto_start,omitempty"`
+	Context            bool                   `json:"context,omitempty"`
+	CPU                int                    `json:"cpu,omitempty"`
+	CPUType            string                 `json:"cpu_type,omitempty"`
+	CPUsInsteadOfCores bool                   `json:"cpus_instead_of_cores,omitempty"`
+	Drives             []ServerDrive          `json:"drive,omitempty"`
+	EnableNuma         bool                   `json:"enable_numa,omitempty"`
+	Hypervisor         string                 `json:"hypervisor,omitempty"`
+	Memory             int                    `json:"mem,omitempty"`
+	Meta               map[string]interface{} `json:"meta,omitempty"`
+	Name               string                 `json:"name,omitempty"`
+	NICs               []ServerNIC            `json:"nics,omitempty"`
+	Owner              ResourceLink           `json:"owner,omitempty"`
+	PublicKeys         []Keypair              `json:"pubkeys,omitempty"`
+	ResourceURI        string                 `json:"resource_uri,omitempty"`
+	SMP                int                    `json:"smp,omitempty"`
+	Status             string                 `json:"status,omitempty"`
+	Tags               []Tag                  `json:"tags,omitempty"`
+	UUID               string                 `json:"uuid,omitempty"`
+	VNCPassword        string                 `json:"vnc_password,omitempty"`
 }
 
-// ServerDrive represents a CloudSigma attached drive to a server.
+// ServerDrive represents a CloudSigma drive attached to a server.
 type ServerDrive struct {
 	BootOrder  int    `json:"boot_order,omitempty"`
 	DevChannel string `json:"dev_channel,omitempty"`
 	Device     string `json:"device,omitempty"`
 	Drive      Drive  `json:"drive,omitempty"`
+}
+
+// ServerNIC represents a CloudSigma network interface card attached to a server.
+type ServerNIC struct {
+	BootOrder        int                   `json:"boot_order,omitempty"`
+	FirewallPolicy   FirewallPolicy        `json:"firewall_policy,omitempty"`
+	IP4Configuration ServerIPConfiguration `json:"ip_v4_conf,omitempty"`
+	IP6Configuration ServerIPConfiguration `json:"ip_v6_conf,omitempty"`
+	MACAddress       string                `json:"mac,omitempty"`
+	Model            string                `json:"model,omitempty"`
+	VLAN             VLAN                  `json:"vlan,omitempty"`
+}
+
+// ServerIPConfiguration represents a CloudSigma public IP configuration.
+type ServerIPConfiguration struct {
+	Type      string `json:"conf,omitempty"`
+	IPAddress IP     `json:"ip,omitempty"`
 }
 
 // ServerAction represents a CloudSigma server action.
@@ -78,7 +102,8 @@ type serversRoot struct {
 	Servers []Server `json:"objects"`
 }
 
-// List provides a detailed list of servers to which the authenticated user has access.
+// List provides a detailed list of servers to which the authenticated user
+// has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#detailed-listing
 func (s *ServersService) List(ctx context.Context) ([]Server, *Response, error) {

@@ -8,7 +8,8 @@ import (
 
 const subscriptionsBasePath = "subscriptions"
 
-// SubscriptionsService handles communication with the subscriptions related methods of the CloudSigma API.
+// SubscriptionsService handles communication with the subscriptions related
+// methods of the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html
 type SubscriptionsService service
@@ -25,7 +26,7 @@ type Subscription struct {
 	Resource    string `json:"resource,omitempty"`
 	ResourceURI string `json:"resource_uri,omitempty"`
 	Status      string `json:"status,omitempty"`
-	UUID        string `json:"uuid"`
+	UUID        string `json:"uuid,omitempty"`
 }
 
 // SubscriptionCreateRequest represents a request to create a subscription.
@@ -64,14 +65,14 @@ func (s *SubscriptionsService) List(ctx context.Context) ([]Subscription, *Respo
 // Create makes a new subscription with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html#creating
-func (s *SubscriptionsService) Create(ctx context.Context, subscriptionCreateRequest *SubscriptionCreateRequest) ([]Subscription, *Response, error) {
-	if subscriptionCreateRequest == nil {
+func (s *SubscriptionsService) Create(ctx context.Context, createRequest *SubscriptionCreateRequest) ([]Subscription, *Response, error) {
+	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/", subscriptionsBasePath)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, subscriptionCreateRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, createRequest)
 	if err != nil {
 		return nil, nil, err
 	}

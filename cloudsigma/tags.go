@@ -8,7 +8,8 @@ import (
 
 const tagsBasePath = "tags"
 
-// TagsService handles communication with the tags related methods of the CloudSigma API.
+// TagsService handles communication with the tags related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html
 type TagsService service
@@ -20,7 +21,7 @@ type Tag struct {
 	Owner       ResourceLink           `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Resources   []TagResource          `json:"resources,omitempty"`
-	UUID        string                 `json:"uuid"`
+	UUID        string                 `json:"uuid,omitempty"`
 }
 
 // TagResource represents a resource assigned to the tag.
@@ -28,7 +29,7 @@ type TagResource struct {
 	Owner        ResourceLink `json:"owner,omitempty"`
 	ResourceType string       `json:"res_type,omitempty"`
 	ResourceURI  string       `json:"resource_uri,omitempty"`
-	UUID         string       `json:"uuid"`
+	UUID         string       `json:"uuid,omitempty"`
 }
 
 // TagCreateRequest represents a request to create a tag.
@@ -77,7 +78,7 @@ func (s *TagsService) Get(ctx context.Context, uuid string) (*Tag, *Response, er
 		return nil, nil, ErrEmptyArgument
 	}
 
-	path := fmt.Sprintf("%v/%v", tagsBasePath, uuid)
+	path := fmt.Sprintf("%v/%v/", tagsBasePath, uuid)
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -96,14 +97,14 @@ func (s *TagsService) Get(ctx context.Context, uuid string) (*Tag, *Response, er
 // Create makes a new tag (or tags) with given payload.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#creating
-func (s *TagsService) Create(ctx context.Context, tagCreateRequest *TagCreateRequest) ([]Tag, *Response, error) {
-	if tagCreateRequest == nil {
+func (s *TagsService) Create(ctx context.Context, createRequest *TagCreateRequest) ([]Tag, *Response, error) {
+	if createRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/", tagsBasePath)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, tagCreateRequest)
+	req, err := s.client.NewRequest(http.MethodPost, path, createRequest)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -120,17 +121,17 @@ func (s *TagsService) Create(ctx context.Context, tagCreateRequest *TagCreateReq
 // Update edits a tag identified by uuid.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#editing
-func (s *TagsService) Update(ctx context.Context, uuid string, tagUpdateRequest *TagUpdateRequest) (*Tag, *Response, error) {
+func (s *TagsService) Update(ctx context.Context, uuid string, updateRequest *TagUpdateRequest) (*Tag, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
-	if tagUpdateRequest == nil {
+	if updateRequest == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/%v/", tagsBasePath, uuid)
 
-	req, err := s.client.NewRequest(http.MethodPut, path, tagUpdateRequest)
+	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
 	if err != nil {
 		return nil, nil, err
 	}

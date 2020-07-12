@@ -34,7 +34,7 @@ func TestTags_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/tags/long-uuid", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/tags/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		_, _ = fmt.Fprint(w, `{"name":"test tag","uuid":"long-uuid"}`)
 	})

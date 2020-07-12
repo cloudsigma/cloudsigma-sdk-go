@@ -24,7 +24,7 @@ type IP struct {
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Server      ResourceLink           `json:"server,omitempty"`
 	Tags        []Tag                  `json:"tags,omitempty"`
-	UUID        string                 `json:"uuid"`
+	UUID        string                 `json:"uuid,omitempty"`
 }
 
 type ipsRoot struct {

@@ -19,7 +19,7 @@ type VLAN struct {
 	Owner        ResourceLink           `json:"owner,omitempty"`
 	ResourceURI  string                 `json:"resource_uri,omitempty"`
 	Subscription VLANSubscription       `json:"subscription,omitempty"`
-	UUID         string                 `json:"uuid"`
+	UUID         string                 `json:"uuid,omitempty"`
 }
 
 // VLANSubscription represents a CloudSigma subscription reference.
