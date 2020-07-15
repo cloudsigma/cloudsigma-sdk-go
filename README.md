@@ -11,18 +11,18 @@ cloudsigma-sdk-go is the official CloudSigma SDK for the Go programming language
 
 ```sh
 # X.Y.Z is the version you need
-go get github.com/cloudsigma/cloudsigma-sdk-go/cloudsigma@vX.Y.Z
+go get github.com/cloudsigma/cloudsigma-sdk-go@vX.Y.Z
 
 
 # for non Go modules usage or latest version
-go get github.com/cloudsigma/cloudsigma-sdk-go/cloudsigma
+go get github.com/cloudsigma/cloudsigma-sdk-go
 ```
 
 
 ## Usage
 
 ```go
-import "github.com/cloudsigma/cloudsigma-sdk-go/cloudsigma"
+import "github.com/cloudsigma/cloudsigma-sdk-go"
 ```
 Create a new CloudSigma client, then use the exposed services to access
 different parts of the CloudSigma API.
