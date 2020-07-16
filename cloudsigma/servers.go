@@ -21,7 +21,7 @@ type Server struct {
 	CPU                int                    `json:"cpu,omitempty"`
 	CPUType            string                 `json:"cpu_type,omitempty"`
 	CPUsInsteadOfCores bool                   `json:"cpus_instead_of_cores,omitempty"`
-	Drives             []ServerDrive          `json:"drive,omitempty"`
+	Drives             []ServerDrive          `json:"drives,omitempty"`
 	EnableNuma         bool                   `json:"enable_numa,omitempty"`
 	Hypervisor         string                 `json:"hypervisor,omitempty"`
 	Memory             int                    `json:"mem,omitempty"`
