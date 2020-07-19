@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -18,18 +19,29 @@ type TagsService service
 type Tag struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       ResourceLink           `json:"owner,omitempty"`
+	Owner       *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Resources   []TagResource          `json:"resources,omitempty"`
+	Resources   []TagResource          `json:"resources"`
 	UUID        string                 `json:"uuid,omitempty"`
+}
+
+// MarshalJSON is a custom marshaller for Tag. It creates an empty array
+// if Resources is nil.
+func (t *Tag) MarshalJSON() ([]byte, error) {
+	type Alias Tag
+	a := struct{ *Alias }{(*Alias)(t)}
+	if a.Resources == nil {
+		a.Resources = make([]TagResource, 0)
+	}
+	return json.Marshal(a)
 }
 
 // TagResource represents a resource assigned to the tag.
 type TagResource struct {
-	Owner        ResourceLink `json:"owner,omitempty"`
-	ResourceType string       `json:"res_type,omitempty"`
-	ResourceURI  string       `json:"resource_uri,omitempty"`
-	UUID         string       `json:"uuid,omitempty"`
+	Owner        *ResourceLink `json:"owner,omitempty"`
+	ResourceType string        `json:"res_type,omitempty"`
+	ResourceURI  string        `json:"resource_uri,omitempty"`
+	UUID         string        `json:"uuid,omitempty"`
 }
 
 // TagCreateRequest represents a request to create a tag.
