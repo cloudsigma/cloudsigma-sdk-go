@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -18,11 +19,25 @@ type ACLsService service
 type ACL struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       ResourceLink           `json:"owner,omitempty"`
+	Owner       *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Rules       []ACLRule              `json:"rules,omitempty"`
-	Tags        []Tag                  `json:"tags,omitempty"`
-	UUID        string                 `json:"uuid"`
+	Rules       []ACLRule              `json:"rules"`
+	Tags        []Tag                  `json:"tags"`
+	UUID        string                 `json:"uuid,omitempty"`
+}
+
+// MarshalJSON is a custom marshaller for ACL. It creates an empty array
+// if ACLRule is nil or Tags is nil.
+func (acl *ACL) MarshalJSON() ([]byte, error) {
+	type Alias ACL
+	a := struct{ *Alias }{(*Alias)(acl)}
+	if a.Rules == nil {
+		a.Rules = make([]ACLRule, 0)
+	}
+	if a.Tags == nil {
+		a.Tags = make([]Tag, 0)
+	}
+	return json.Marshal(a)
 }
 
 // ACLRule represents a CloudSigma ACL rule.
