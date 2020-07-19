@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -17,15 +18,26 @@ type SnapshotsService service
 // Snapshot represents a CloudSigma snapshot.
 type Snapshot struct {
 	AllocatedSize int                    `json:"allocated_size,omitempty"`
-	Drive         Drive                  `json:"drive,omitempty"`
+	Drive         *Drive                 `json:"drive,omitempty"`
 	Meta          map[string]interface{} `json:"meta,omitempty"`
 	Name          string                 `json:"name,omitempty"`
-	Owner         ResourceLink           `json:"owner,omitempty"`
+	Owner         *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI   string                 `json:"resource_uri,omitempty"`
 	Status        string                 `json:"status,omitempty"`
-	Tags          []Tag                  `json:"tags,omitempty"`
+	Tags          []Tag                  `json:"tags"`
 	Timestamp     string                 `json:"timestamp,omitempty"`
 	UUID          string                 `json:"uuid,omitempty"`
+}
+
+// MarshalJSON is a custom marshaller for Snapshot. It creates an empty array
+// if Tags is nil.
+func (s *Snapshot) MarshalJSON() ([]byte, error) {
+	type Alias Snapshot
+	a := struct{ *Alias }{(*Alias)(s)}
+	if a.Tags == nil {
+		a.Tags = make([]Tag, 0)
+	}
+	return json.Marshal(a)
 }
 
 // SnapshotCreateRequest represents a request to create a snapshot.

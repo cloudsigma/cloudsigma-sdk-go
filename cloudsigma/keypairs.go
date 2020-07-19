@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -23,8 +24,19 @@ type Keypair struct {
 	PrivateKey    string                 `json:"private_key,omitempty"`
 	PublicKey     string                 `json:"public_key,omitempty"`
 	ResourceURI   string                 `json:"resource_uri,omitempty"`
-	Tags          []Tag                  `json:"tags,omitempty"`
+	Tags          []Tag                  `json:"tags"`
 	UUID          string                 `json:"uuid,omitempty"`
+}
+
+// MarshalJSON is a custom marshaller for Keypair. It creates an empty array
+// if Tags is nil.
+func (k *Keypair) MarshalJSON() ([]byte, error) {
+	type Alias Keypair
+	a := struct{ *Alias }{(*Alias)(k)}
+	if a.Tags == nil {
+		a.Tags = make([]Tag, 0)
+	}
+	return json.Marshal(a)
 }
 
 // KeypairCreateRequest represents a request to create a keypair.

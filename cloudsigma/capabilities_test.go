@@ -17,7 +17,7 @@ func TestCapabilities_Get(t *testing.T) {
 		_, _ = fmt.Fprint(w, `{"hypervisors":{"kvm":["amd"]}}`)
 	})
 	expected := &Capabilities{
-		Hypervisors: CapabilitiesHypervisors{
+		Hypervisors: &CapabilitiesHypervisors{
 			KVM: []string{"amd"},
 		},
 	}

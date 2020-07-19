@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -18,12 +19,29 @@ type FirewallPoliciesService service
 type FirewallPolicy struct {
 	Meta        map[string]interface{} `json:"meta,omitempty"`
 	Name        string                 `json:"name,omitempty"`
-	Owner       ResourceLink           `json:"owner,omitempty"`
+	Owner       *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Rules       []FirewallPolicyRule   `json:"rules,omitempty"`
-	Servers     []ResourceLink         `json:"servers,omitempty"`
-	Tags        []Tag                  `json:"tags,omitempty"`
+	Rules       []FirewallPolicyRule   `json:"rules"`
+	Servers     []ResourceLink         `json:"servers"`
+	Tags        []Tag                  `json:"tags"`
 	UUID        string                 `json:"uuid,omitempty"`
+}
+
+// MarshalJSON is a custom marshaller for FirewallPolicy. It creates an empty
+// array if Rules is nil, Servers is nil or Tags is nil.
+func (f *FirewallPolicy) MarshalJSON() ([]byte, error) {
+	type Alias FirewallPolicy
+	a := struct{ *Alias }{(*Alias)(f)}
+	if a.Rules == nil {
+		a.Rules = make([]FirewallPolicyRule, 0)
+	}
+	if a.Servers == nil {
+		a.Servers = make([]ResourceLink, 0)
+	}
+	if a.Tags == nil {
+		a.Tags = make([]Tag, 0)
+	}
+	return json.Marshal(a)
 }
 
 // FirewallPolicyRule represents a CloudSigma firewall policy rule.

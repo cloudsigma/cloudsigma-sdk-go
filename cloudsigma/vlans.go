@@ -16,9 +16,9 @@ type VLANsService service
 // VLAN represents a CloudSigma VLAN.
 type VLAN struct {
 	Meta         map[string]interface{} `json:"meta,omitempty"`
-	Owner        ResourceLink           `json:"owner,omitempty"`
+	Owner        *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI  string                 `json:"resource_uri,omitempty"`
-	Subscription VLANSubscription       `json:"subscription,omitempty"`
+	Subscription *VLANSubscription      `json:"subscription,omitempty"`
 	UUID         string                 `json:"uuid,omitempty"`
 }
 

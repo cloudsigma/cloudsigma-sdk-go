@@ -22,10 +22,10 @@ type Drive struct {
 	Meta            map[string]interface{} `json:"meta,omitempty"`
 	MountedOn       []ResourceLink         `json:"mounted_on,omitempty"`
 	Name            string                 `json:"name,omitempty"`
-	Owner           ResourceLink           `json:"owner,omitempty"`
+	Owner           *ResourceLink          `json:"owner,omitempty"`
 	RemoteSnapshots []ResourceLink         `json:"remote_snapshots,omitempty"`
 	ResourceURI     string                 `json:"resource_uri,omitempty"`
-	Runtime         DriveRuntime           `json:"runtime,omitempty"`
+	Runtime         *DriveRuntime          `json:"runtime,omitempty"`
 	Size            int                    `json:"size,omitempty"`
 	Snapshots       []ResourceLink         `json:"snapshots,omitempty"`
 	Status          string                 `json:"status,omitempty"`

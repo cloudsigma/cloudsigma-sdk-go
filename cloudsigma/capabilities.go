@@ -15,22 +15,22 @@ type CapabilitiesService service
 
 // Capabilities represents CloudSigma capabilities.
 type Capabilities struct {
-	Hosts       CapabilitiesHosts       `json:"hosts,omitempty"`
-	Hypervisors CapabilitiesHypervisors `json:"hypervisors,omitempty"`
+	Hosts       *CapabilitiesHosts       `json:"hosts,omitempty"`
+	Hypervisors *CapabilitiesHypervisors `json:"hypervisors,omitempty"`
 }
 
 // CapabilitiesHosts represents available host types and their limitations.
 type CapabilitiesHosts struct {
-	AMD   CapabilitiesHost `json:"amd,omitempty"`
-	Intel CapabilitiesHost `json:"intel,omitempty"`
+	AMD   *CapabilitiesHost `json:"amd,omitempty"`
+	Intel *CapabilitiesHost `json:"intel,omitempty"`
 }
 
 // CapabilitiesHost represents capabilities limitation for an host type
 type CapabilitiesHost struct {
-	CPU       CapabilitiesLimitation `json:"cpu,omitempty"`
-	CPUPerSMP CapabilitiesLimitation `json:"cpu_per_smp,omitempty"`
-	Memory    CapabilitiesLimitation `json:"mem,omitempty"`
-	SMP       CapabilitiesLimitation `json:"smp,omitempty"`
+	CPU       *CapabilitiesLimitation `json:"cpu,omitempty"`
+	CPUPerSMP *CapabilitiesLimitation `json:"cpu_per_smp,omitempty"`
+	Memory    *CapabilitiesLimitation `json:"mem,omitempty"`
+	SMP       *CapabilitiesLimitation `json:"smp,omitempty"`
 }
 
 // CapabilitiesHypervisors represents a list of hypervisors and which hosts they are available on.

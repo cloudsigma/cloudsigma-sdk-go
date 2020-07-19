@@ -14,16 +14,16 @@ type CloudStatusService service
 
 // CloudStatus represents a CloudSigma cloud status.
 type CloudStatus struct {
-	FreeTier              CloudStatusFreeTier        `json:"free_tier,omitempty"`
-	FreeTierMonthly       CloudStatusFreeTierMonthly `json:"free_tier_monthly,omitempty"`
-	Guest                 bool                       `json:"guest,omitempty"`
-	HostAvailabilityZones bool                       `json:"host_availability_zones,omitempty"`
-	RemoteSnapshots       bool                       `json:"remote_snapshots,omitempty"`
-	Signup                bool                       `json:"signup,omitempty"`
-	SSO                   []string                   `json:"sso,omitempty"`
-	Trial                 bool                       `json:"trial,omitempty"`
-	VMware                bool                       `json:"vmware,omitempty"`
-	VPC                   bool                       `json:"vpc,omitempty"`
+	FreeTier              *CloudStatusFreeTier        `json:"free_tier,omitempty"`
+	FreeTierMonthly       *CloudStatusFreeTierMonthly `json:"free_tier_monthly,omitempty"`
+	Guest                 bool                        `json:"guest,omitempty"`
+	HostAvailabilityZones bool                        `json:"host_availability_zones,omitempty"`
+	RemoteSnapshots       bool                        `json:"remote_snapshots,omitempty"`
+	Signup                bool                        `json:"signup,omitempty"`
+	SSO                   []string                    `json:"sso,omitempty"`
+	Trial                 bool                        `json:"trial,omitempty"`
+	VMware                bool                        `json:"vmware,omitempty"`
+	VPC                   bool                        `json:"vpc,omitempty"`
 }
 
 // CloudStatusFreeTier represents a CloudSigma cloud status free tier.
