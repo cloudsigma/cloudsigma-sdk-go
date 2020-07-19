@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -28,7 +29,7 @@ type Server struct {
 	Meta               map[string]interface{} `json:"meta,omitempty"`
 	Name               string                 `json:"name,omitempty"`
 	NICs               []ServerNIC            `json:"nics,omitempty"`
-	Owner              ResourceLink           `json:"owner,omitempty"`
+	Owner              *ResourceLink          `json:"owner,omitempty"`
 	PublicKeys         []Keypair              `json:"pubkeys,omitempty"`
 	ResourceURI        string                 `json:"resource_uri,omitempty"`
 	SMP                int                    `json:"smp,omitempty"`
@@ -43,24 +44,24 @@ type ServerDrive struct {
 	BootOrder  int    `json:"boot_order,omitempty"`
 	DevChannel string `json:"dev_channel,omitempty"`
 	Device     string `json:"device,omitempty"`
-	Drive      Drive  `json:"drive,omitempty"`
+	Drive      *Drive `json:"drive,omitempty"`
 }
 
 // ServerNIC represents a CloudSigma network interface card attached to a server.
 type ServerNIC struct {
-	BootOrder        int                   `json:"boot_order,omitempty"`
-	FirewallPolicy   FirewallPolicy        `json:"firewall_policy,omitempty"`
-	IP4Configuration ServerIPConfiguration `json:"ip_v4_conf,omitempty"`
-	IP6Configuration ServerIPConfiguration `json:"ip_v6_conf,omitempty"`
-	MACAddress       string                `json:"mac,omitempty"`
-	Model            string                `json:"model,omitempty"`
-	VLAN             VLAN                  `json:"vlan,omitempty"`
+	BootOrder        int                    `json:"boot_order,omitempty"`
+	FirewallPolicy   *FirewallPolicy        `json:"firewall_policy,omitempty"`
+	IP4Configuration *ServerIPConfiguration `json:"ip_v4_conf,omitempty"`
+	IP6Configuration *ServerIPConfiguration `json:"ip_v6_conf,omitempty"`
+	MACAddress       string                 `json:"mac,omitempty"`
+	Model            string                 `json:"model,omitempty"`
+	VLAN             *VLAN                  `json:"vlan,omitempty"`
 }
 
 // ServerIPConfiguration represents a CloudSigma public IP configuration.
 type ServerIPConfiguration struct {
 	Type      string `json:"conf,omitempty"`
-	IPAddress IP     `json:"ip,omitempty"`
+	IPAddress *IP    `json:"ip,omitempty"`
 }
 
 // ServerAction represents a CloudSigma server action.
@@ -82,19 +83,22 @@ type ServerUpdateRequest struct {
 
 // ServerAttachDriveRequest represents a request to attach a drive to a server.
 type ServerAttachDriveRequest struct {
-	CPU         int                 `json:"cpu"`
-	Drives      []ServerAttachDrive `json:"drives"`
-	Memory      int                 `json:"mem"`
-	Name        string              `json:"name"`
-	VNCPassword string              `json:"vnc_password"`
+	CPU         int           `json:"cpu"`
+	Drives      []ServerDrive `json:"drives"`
+	Memory      int           `json:"mem"`
+	Name        string        `json:"name"`
+	VNCPassword string        `json:"vnc_password"`
 }
 
-// ServerAttachDrive represents a drive used by ServerAttachDriveRequest.
-type ServerAttachDrive struct {
-	BootOrder  int    `json:"boot_order,omitempty"`
-	DevChannel string `json:"dev_channel,omitempty"`
-	Device     string `json:"device,omitempty"`
-	Drive      string `json:"drive,omitempty"`
+// MarshalJSON is a custom marshaller for ServerAttachDriveRequest. It creates
+// an empty array if Drives is nil.
+func (r *ServerAttachDriveRequest) MarshalJSON() ([]byte, error) {
+	type Alias ServerAttachDriveRequest
+	a := struct{ *Alias }{(*Alias)(r)}
+	if a.Drives == nil {
+		a.Drives = make([]ServerDrive, 0)
+	}
+	return json.Marshal(a)
 }
 
 type serversRoot struct {
