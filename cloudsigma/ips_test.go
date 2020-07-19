@@ -61,3 +61,15 @@ func TestIPs_Get_invalidUUID(t *testing.T) {
 
 	assert.Error(t, err)
 }
+
+func TestIPs_MarshalJSON(t *testing.T) {
+	ip := &IP{
+		UUID: "long-uuid",
+	}
+
+	bytes, err := ip.MarshalJSON()
+	expected := string(bytes)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, "{\"tags\":[],\"uuid\":\"long-uuid\"}")
+}
