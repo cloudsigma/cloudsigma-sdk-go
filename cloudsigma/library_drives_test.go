@@ -23,7 +23,7 @@ func TestLibraryDrives_List(t *testing.T) {
 		},
 	}
 
-	drives, resp, err := client.LibraryDrives.List(ctx)
+	drives, resp, err := client.LibraryDrives.List(ctx, nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drives)

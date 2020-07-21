@@ -33,6 +33,16 @@ func teardown() {
 	server.Close()
 }
 
+func TestClient_addOptions(t *testing.T) {
+	path := "/servers/"
+	opts := &ListOptions{Limit: 25, Offset: 5}
+
+	pathWithOpts, err := addOptions(path, opts)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "/servers/?limit=25&offset=5", pathWithOpts)
+}
+
 func TestClient_NewBasicAuthClient(t *testing.T) {
 	setup()
 	defer teardown()

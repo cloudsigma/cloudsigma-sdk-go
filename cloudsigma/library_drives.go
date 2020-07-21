@@ -53,6 +53,21 @@ type LibraryDriveCloneRequest struct {
 	*LibraryDrive
 }
 
+// LibraryDriveListOptions specifies the optional parameters
+// to the LibraryDrivesService.List.
+type LibraryDriveListOptions struct {
+	// Names filters library drives based on their name.
+	Names []string `url:"name,comma,omitempty"`
+	// OSs filters library drives based on their operation system.
+	OSs []string `url:"os,comma,omitempty"`
+	// UUIDs filters library drives based on their uuid.
+	UUIDs []string `url:"uuid,comma,omitempty"`
+	// Versions filters library drives based on their version.
+	Versions []string `url:"version,comma,omitempty"`
+
+	ListOptions
+}
+
 type libraryDrivesRoot struct {
 	LibraryDrives []LibraryDrive `json:"objects"`
 	Meta          *Meta          `json:"meta,omitempty"`
@@ -61,8 +76,12 @@ type libraryDrivesRoot struct {
 // List provides a list of library drives to which the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#listing
-func (s *LibraryDrivesService) List(ctx context.Context) ([]LibraryDrive, *Response, error) {
+func (s *LibraryDrivesService) List(ctx context.Context, opts *LibraryDriveListOptions) ([]LibraryDrive, *Response, error) {
 	path := fmt.Sprintf("%v/", libdrivesBasePath)
+	path, err := addOptions(path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {

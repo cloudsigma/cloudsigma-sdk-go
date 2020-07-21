@@ -24,7 +24,7 @@ func TestDrives_List(t *testing.T) {
 		},
 	}
 
-	drives, resp, err := client.Drives.List(ctx)
+	drives, resp, err := client.Drives.List(ctx, nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drives)

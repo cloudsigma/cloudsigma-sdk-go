@@ -9,8 +9,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -55,6 +58,40 @@ type Client struct {
 
 type service struct {
 	client *Client
+}
+
+// ListOptions specifies the optional parameters to various List methods that
+// support offset pagination.
+type ListOptions struct {
+	// Limit specifies the maximum number of objects to be returned. If set to 0,
+	// all resources will be returned. Note, there is no omitempty struct tag!
+	Limit int `url:"limit"`
+
+	// Offset specifies the index at which to start returning objects. It is
+	// a zero based index.
+	Offset int `url:"offset,omitempty"`
+}
+
+// addOptions adds the parameters in opts as URL query parameters to s. opts
+// must be a struct whose fields may contain "url" tags.
+func addOptions(s string, opts interface{}) (string, error) {
+	v := reflect.ValueOf(opts)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return s, nil
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return s, err
+	}
+
+	qs, err := query.Values(opts)
+	if err != nil {
+		return s, err
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }
 
 // Response is a CloudSigma response. This wraps the standard http.Response.

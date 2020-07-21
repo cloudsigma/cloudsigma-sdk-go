@@ -56,6 +56,19 @@ type DriveCloneRequest struct {
 	*Drive
 }
 
+// DriveListOptions specifies the optional parameters
+// to the DrivesService.List.
+type DriveListOptions struct {
+	// Names filters drives based on their name.
+	Names []string `url:"name,comma,omitempty"`
+	// Tags filters drives based on their tag.
+	Tags []string `url:"tag,comma,omitempty"`
+	// UUIDs filters drives based on their uuid.
+	UUIDs []string `url:"uuid,comma,omitempty"`
+
+	ListOptions
+}
+
 type drivesRoot struct {
 	Drives []Drive `json:"objects"`
 	Meta   *Meta   `json:"meta,omitempty"`
@@ -65,8 +78,12 @@ type drivesRoot struct {
 // the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#detailed-listing
-func (s *DrivesService) List(ctx context.Context) ([]Drive, *Response, error) {
+func (s *DrivesService) List(ctx context.Context, opts *DriveListOptions) ([]Drive, *Response, error) {
 	path := fmt.Sprintf("%v/detail/", drivesBasePath)
+	path, err := addOptions(path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
