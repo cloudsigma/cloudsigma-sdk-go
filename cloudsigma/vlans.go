@@ -8,7 +8,8 @@ import (
 
 const vlansBasePath = "vlans"
 
-// VLANsService handles communication with the VLAN related methods of the CloudSigma API.
+// VLANsService handles communication with the VLAN related methods of
+// the CloudSigma API.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#vlan
 type VLANsService service
