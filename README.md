@@ -1,6 +1,6 @@
 # CloudSigma SDK for Go
 
-[![Build Status](https://api.travis-ci.org/cloudsigma/cloudsigma-sdk-go.svg?branch=master)](https://travis-ci.org/cloudsigma/cloudsigma-sdk-go)
+[![Build Status](https://github.com/cloudsigma/cloudsigma-sdk-go/workflows/build/badge.svg)](https://github.com/cloudsigma/cloudsigma-sdk-go/actions?query=workflow%3Abuild)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cloudsigma/cloudsigma-sdk-go)](https://goreportcard.com/report/github.com/cloudsigma/cloudsigma-sdk-go)
 [![GoDoc](https://img.shields.io/badge/pkg.go.dev-doc-blue)](http://pkg.go.dev/github.com/cloudsigma/cloudsigma-sdk-go)
 
