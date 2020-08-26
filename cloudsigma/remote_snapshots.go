@@ -14,8 +14,9 @@ type RemoteSnapshotsService service
 
 // RemoteSnapshot represents a CloudSigma remote snapshot.
 type RemoteSnapshot struct {
-	Snapshot
+	Location                    string                       `json:"location,omitempty"`
 	RemoteSnapshotDriveMetadata *RemoteSnapshotDriveMetadata `json:"drive_meta,omitempty"`
+	Snapshot
 }
 
 // RemoteSnapshotDriveMetadata represents a CloudSigma snapshot drive meta.
@@ -29,9 +30,7 @@ type RemoteSnapshotDriveMetadata struct {
 
 // RemoteSnapshotCreateRequest represents a request to create a remote snapshot.
 type RemoteSnapshotCreateRequest struct {
-	Drive    *Drive `json:"drive"`
-	Location string `json:"location"`
-	Name     string `json:"name"`
+	RemoteSnapshots []RemoteSnapshot `json:"objects"`
 }
 
 // RemoteSnapshotUpdateRequest represents a request to update a remote snapshot.
