@@ -24,7 +24,7 @@ type Keypair struct {
 	PrivateKey    string                 `json:"private_key,omitempty"`
 	PublicKey     string                 `json:"public_key,omitempty"`
 	ResourceURI   string                 `json:"resource_uri,omitempty"`
-	Tags          []Tag                  `json:"tags"`
+	Tags          []Tag                  `json:"tags,omitempty"`
 	UUID          string                 `json:"uuid,omitempty"`
 }
 
