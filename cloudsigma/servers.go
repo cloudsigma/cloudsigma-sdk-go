@@ -32,6 +32,7 @@ type Server struct {
 	Owner              *ResourceLink          `json:"owner,omitempty"`
 	PublicKeys         []Keypair              `json:"pubkeys,omitempty"`
 	ResourceURI        string                 `json:"resource_uri,omitempty"`
+	Runtime            *ServerRuntime         `json:"runtime,omitempty"`
 	SMP                int                    `json:"smp,omitempty"`
 	Status             string                 `json:"status,omitempty"`
 	Tags               []Tag                  `json:"tags,omitempty"`
@@ -56,6 +57,24 @@ type ServerNIC struct {
 	MACAddress       string                 `json:"mac,omitempty"`
 	Model            string                 `json:"model,omitempty"`
 	VLAN             *VLAN                  `json:"vlan,omitempty"`
+}
+
+// ServerRuntime represents a CloudSigma server runtime information.
+type ServerRuntime struct {
+	RuntimeNICs []ServerRuntimeNIC `json:"nics,omitempty"`
+}
+
+// ServerRuntimeNIC represents a CloudSigma server's network interface card runtime.
+type ServerRuntimeNIC struct {
+	InterfaceType string          `json:"interface_type,omitempty"`
+	IPv4          ServerRuntimeIP `json:"ip_v4,omitempty"`
+	IPv6          ServerRuntimeIP `json:"ip_v6,omitempty"`
+}
+
+// ServerRuntimeIP represents a CloudSigma server's runtime IP configuration.
+type ServerRuntimeIP struct {
+	ResourceURI string `json:"resource_uri,omitempty"`
+	UUID        string `json:"uuid,omitempty"`
 }
 
 // ServerIPConfiguration represents a CloudSigma public IP configuration.
