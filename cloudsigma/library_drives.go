@@ -56,8 +56,10 @@ type LibraryDriveCloneRequest struct {
 // LibraryDriveListOptions specifies the optional parameters
 // to the LibraryDrivesService.List.
 type LibraryDriveListOptions struct {
-	// Names filters library drives based on their name.
+	// Names filters library drives based on their exact name.
 	Names []string `url:"name,comma,omitempty"`
+	// NamesContain filters library drives based on matching their name.
+	NamesContain []string `url:"name__icontains,omitempty"`
 	// OSs filters library drives based on their operation system.
 	OSs []string `url:"os,comma,omitempty"`
 	// UUIDs filters library drives based on their uuid.
