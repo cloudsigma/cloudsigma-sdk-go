@@ -2,7 +2,6 @@ package cloudsigma
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -24,19 +23,7 @@ type IP struct {
 	Owner       *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
 	Server      *ResourceLink          `json:"server,omitempty"`
-	Tags        []Tag                  `json:"tags"`
 	UUID        string                 `json:"uuid,omitempty"`
-}
-
-// MarshalJSON is a custom marshaller for ACL. It creates an empty array
-// if Tags is nil.
-func (i *IP) MarshalJSON() ([]byte, error) {
-	type Alias IP
-	a := struct{ *Alias }{(*Alias)(i)}
-	if a.Tags == nil {
-		a.Tags = make([]Tag, 0)
-	}
-	return json.Marshal(a)
 }
 
 type ipsRoot struct {
