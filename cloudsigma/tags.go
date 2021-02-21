@@ -59,6 +59,10 @@ type tagsRoot struct {
 	Tags []Tag `json:"objects"`
 }
 
+func (t Tag) String() string {
+	return Stringify(t)
+}
+
 // List provides a list of tags to which the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/tags.html#listing

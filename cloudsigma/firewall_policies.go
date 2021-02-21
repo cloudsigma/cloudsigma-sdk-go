@@ -71,6 +71,10 @@ type fwpoliciesRoot struct {
 	FirewallPolicies []FirewallPolicy `json:"objects"`
 }
 
+func (f FirewallPolicy) String() string {
+	return Stringify(f)
+}
+
 // List provides a detailed list of firewall policies to which the authenticated
 // user has access.
 //

@@ -39,6 +39,10 @@ type vlansRoot struct {
 	VLANs []VLAN `json:"objects"`
 }
 
+func (v VLAN) String() string {
+	return Stringify(v)
+}
+
 // List provides a list of VLANs to which the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#detailed-listing

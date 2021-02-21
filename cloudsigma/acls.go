@@ -60,6 +60,10 @@ type aclsRoot struct {
 	Meta *Meta `json:"meta,omitempty"`
 }
 
+func (a ACL) String() string {
+	return Stringify(a)
+}
+
 // List provides a list of ACLs defined by the authenticated user.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#listing

@@ -44,6 +44,10 @@ type ipsRoot struct {
 	IPs  []IP  `json:"objects"`
 }
 
+func (i IP) String() string {
+	return Stringify(i)
+}
+
 // List provides a list of IPs to which the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/networking.html#id2

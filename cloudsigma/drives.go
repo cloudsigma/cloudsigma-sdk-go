@@ -74,6 +74,10 @@ type drivesRoot struct {
 	Meta   *Meta   `json:"meta,omitempty"`
 }
 
+func (d Drive) String() string {
+	return Stringify(d)
+}
+
 // List provides a detailed list of drives with additional information to which
 // the authenticated user has access.
 //
