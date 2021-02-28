@@ -75,6 +75,10 @@ type libraryDrivesRoot struct {
 	Meta          *Meta          `json:"meta,omitempty"`
 }
 
+func (l LibraryDrive) String() string {
+	return Stringify(l)
+}
+
 // List provides a list of library drives to which the authenticated user has access.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#listing

@@ -2,7 +2,6 @@ package cloudsigma
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -21,19 +20,8 @@ type Tag struct {
 	Name        string                 `json:"name,omitempty"`
 	Owner       *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI string                 `json:"resource_uri,omitempty"`
-	Resources   []TagResource          `json:"resources"`
+	Resources   []TagResource          `json:"resources,omitempty"`
 	UUID        string                 `json:"uuid,omitempty"`
-}
-
-// MarshalJSON is a custom marshaller for Tag. It creates an empty array
-// if Resources is nil.
-func (t *Tag) MarshalJSON() ([]byte, error) {
-	type Alias Tag
-	a := struct{ *Alias }{(*Alias)(t)}
-	if a.Resources == nil {
-		a.Resources = make([]TagResource, 0)
-	}
-	return json.Marshal(a)
 }
 
 // TagResource represents a resource assigned to the tag.
@@ -57,6 +45,10 @@ type TagUpdateRequest struct {
 type tagsRoot struct {
 	Meta *Meta `json:"meta,omitempty"`
 	Tags []Tag `json:"objects"`
+}
+
+func (t Tag) String() string {
+	return Stringify(t)
 }
 
 // List provides a list of tags to which the authenticated user has access.

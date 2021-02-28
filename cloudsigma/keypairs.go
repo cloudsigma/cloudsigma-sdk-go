@@ -41,6 +41,10 @@ type keypairsRoot struct {
 	Meta     *Meta     `json:"meta,omitempty"`
 }
 
+func (k Keypair) String() string {
+	return Stringify(k)
+}
+
 // List provides a list of keypairs.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#listing-getting-updating-deleting

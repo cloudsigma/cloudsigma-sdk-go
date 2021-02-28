@@ -19,7 +19,9 @@ type VLAN struct {
 	Meta         map[string]interface{} `json:"meta,omitempty"`
 	Owner        *ResourceLink          `json:"owner,omitempty"`
 	ResourceURI  string                 `json:"resource_uri,omitempty"`
+	Servers      []ResourceLink         `json:"servers,omitempty"`
 	Subscription *VLANSubscription      `json:"subscription,omitempty"`
+	Tags         []Tag                  `json:"tags,omitempty"`
 	UUID         string                 `json:"uuid,omitempty"`
 }
 
@@ -37,6 +39,10 @@ type VLANUpdateRequest struct {
 type vlansRoot struct {
 	Meta  *Meta  `json:"meta,omitempty"`
 	VLANs []VLAN `json:"objects"`
+}
+
+func (v VLAN) String() string {
+	return Stringify(v)
 }
 
 // List provides a list of VLANs to which the authenticated user has access.

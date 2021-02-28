@@ -55,6 +55,10 @@ type snapshotsRoot struct {
 	Snapshots []Snapshot `json:"objects"`
 }
 
+func (s Snapshot) String() string {
+	return Stringify(s)
+}
+
 // List provides a detailed list of snapshots to which the authenticated user
 // has access.
 //

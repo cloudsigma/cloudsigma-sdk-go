@@ -43,6 +43,10 @@ type remoteSnapshotsRoot struct {
 	Meta            *Meta            `json:"meta,omitempty"`
 }
 
+func (r RemoteSnapshot) String() string {
+	return Stringify(r)
+}
+
 // List provides a detailed list of remote snapshots to which the authenticated
 // user has access.
 func (s *RemoteSnapshotsService) List(ctx context.Context, opts *ListOptions) ([]RemoteSnapshot, *Response, error) {
