@@ -154,59 +154,6 @@ func TestServers_Update_emptyPayload(t *testing.T) {
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
 }
 
-func TestServers_AttachDrive(t *testing.T) {
-	setup()
-	defer teardown()
-
-	input := &ServerAttachDriveRequest{
-		Name: "test server with drives",
-	}
-	mux.HandleFunc("/servers/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
-		v := new(ServerAttachDriveRequest)
-		_ = json.NewDecoder(r.Body).Decode(v)
-		assert.Equal(t, input, v)
-		assert.Equal(t, http.MethodPut, r.Method)
-		_, _ = fmt.Fprint(w, `{"name":"test server with drives","uuid":"long-uuid"}`)
-	})
-	expected := &Server{
-		Name: "test server with drives",
-		UUID: "long-uuid",
-	}
-
-	server, _, err := client.Servers.AttachDrive(ctx, "long-uuid", input)
-
-	assert.NoError(t, err)
-	assert.Equal(t, expected, server)
-}
-
-func TestServers_AttachDrive_emptyUUID(t *testing.T) {
-	input := &ServerAttachDriveRequest{
-		Name: "test server with drives",
-	}
-
-	_, _, err := client.Servers.AttachDrive(ctx, "", input)
-
-	assert.Error(t, err)
-	assert.Equal(t, ErrEmptyArgument.Error(), err.Error())
-}
-
-func TestServers_AttachDrive_invalidUUID(t *testing.T) {
-	input := &ServerAttachDriveRequest{
-		Name: "test server with drives",
-	}
-
-	_, _, err := client.Servers.AttachDrive(ctx, "%", input)
-
-	assert.Error(t, err)
-}
-
-func TestServers_AttachDrive_emptyPayload(t *testing.T) {
-	_, _, err := client.Servers.AttachDrive(ctx, "long-uuid", nil)
-
-	assert.Error(t, err)
-	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
-}
-
 func TestServers_Delete(t *testing.T) {
 	setup()
 	defer teardown()

@@ -2,7 +2,6 @@ package cloudsigma
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -98,26 +97,6 @@ type ServerCreateRequest struct {
 // ServerUpdateRequest represents a request to update a server.
 type ServerUpdateRequest struct {
 	*Server
-}
-
-// ServerAttachDriveRequest represents a request to attach a drive to a server.
-type ServerAttachDriveRequest struct {
-	CPU         int           `json:"cpu"`
-	Drives      []ServerDrive `json:"drives"`
-	Memory      int           `json:"mem"`
-	Name        string        `json:"name"`
-	VNCPassword string        `json:"vnc_password"`
-}
-
-// MarshalJSON is a custom marshaller for ServerAttachDriveRequest. It creates
-// an empty array if Drives is nil.
-func (r *ServerAttachDriveRequest) MarshalJSON() ([]byte, error) {
-	type Alias ServerAttachDriveRequest
-	a := struct{ *Alias }{(*Alias)(r)}
-	if a.Drives == nil {
-		a.Drives = make([]ServerDrive, 0)
-	}
-	return json.Marshal(a)
 }
 
 type serversRoot struct {
@@ -217,33 +196,6 @@ func (s *ServersService) Update(ctx context.Context, uuid string, updateRequest 
 	updateRequest.UUID = ""
 
 	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	server := new(Server)
-	resp, err := s.client.Do(ctx, req, server)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return server, resp, nil
-}
-
-// AttachDrive edits a server and attaches a drive.
-//
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#attach-a-drive
-func (s *ServersService) AttachDrive(ctx context.Context, uuid string, attachRequest *ServerAttachDriveRequest) (*Server, *Response, error) {
-	if uuid == "" {
-		return nil, nil, ErrEmptyArgument
-	}
-	if attachRequest == nil {
-		return nil, nil, ErrEmptyPayloadNotAllowed
-	}
-
-	path := fmt.Sprintf("%v/%v/", serversBasePath, uuid)
-
-	req, err := s.client.NewRequest(http.MethodPut, path, attachRequest)
 	if err != nil {
 		return nil, nil, err
 	}
