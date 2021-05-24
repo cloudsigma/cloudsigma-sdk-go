@@ -11,14 +11,14 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/google/go-querystring/query"
 )
 
 const (
+	libraryVersion   = "0.9.0"
 	defaultLocation  = "zrh"
-	defaultUserAgent = "cloudsigma-sdk-go"
+	defaultUserAgent = "cloudsigma-sdk-go/" + libraryVersion
 
 	baseURL         = "https://%s.cloudsigma.com/api/2.0/"
 	headerRequestID = "X-REQUEST-ID"
@@ -106,9 +106,9 @@ type Response struct {
 
 // NewBasicAuthClient returns a new CloudSigma API client. To use API methods provide username (your email)
 // and password.
-func NewBasicAuthClient(username, password string) *Client {
-	httpClient := &http.Client{
-		Timeout: time.Second * 15,
+func NewBasicAuthClient(username, password string, httpClient *http.Client) *Client {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
 	}
 
 	c := &Client{

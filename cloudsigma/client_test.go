@@ -25,7 +25,7 @@ func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 
-	client = NewBasicAuthClient("user", "password")
+	client = NewBasicAuthClient("user", "password", nil)
 	client.APIEndpoint, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
@@ -51,7 +51,7 @@ func TestClient_NewBasicAuthClient(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("%v/", server.URL), client.APIEndpoint.String())
 	assert.Equal(t, "user", client.Username)
 	assert.Equal(t, "password", client.Password)
-	assert.Equal(t, "cloudsigma-sdk-go", client.UserAgent)
+	assert.Equal(t, defaultUserAgent, client.UserAgent)
 }
 
 func TestClient_SetLocation(t *testing.T) {
@@ -67,9 +67,9 @@ func TestClient_SetUserAgent(t *testing.T) {
 	setup()
 	defer teardown()
 
-	client.SetUserAgent("terraform-provider-cloudsigma")
+	client.SetUserAgent("terraform-provider-cloudsigma/1.1.0-release")
 
-	assert.Equal(t, "terraform-provider-cloudsigma", client.UserAgent)
+	assert.Equal(t, "terraform-provider-cloudsigma/1.1.0-release", client.UserAgent)
 }
 
 func TestClient_NewRequest(t *testing.T) {
