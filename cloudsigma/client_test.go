@@ -29,6 +29,14 @@ func setup() {
 	client.APIEndpoint, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
+func setupWithToken() {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+
+	client = NewTokenClient("access_token", nil)
+	client.APIEndpoint, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
+}
+
 func teardown() {
 	server.Close()
 }
@@ -49,8 +57,21 @@ func TestClient_NewBasicAuthClient(t *testing.T) {
 
 	assert.NotNil(t, client.APIEndpoint)
 	assert.Equal(t, fmt.Sprintf("%v/", server.URL), client.APIEndpoint.String())
+	assert.Equal(t, "", client.Token)
 	assert.Equal(t, "user", client.Username)
 	assert.Equal(t, "password", client.Password)
+	assert.Equal(t, defaultUserAgent, client.UserAgent)
+}
+
+func TestClient_NewTokenClient(t *testing.T) {
+	setupWithToken()
+	defer teardown()
+
+	assert.NotNil(t, client.APIEndpoint)
+	assert.Equal(t, fmt.Sprintf("%v/", server.URL), client.APIEndpoint.String())
+	assert.Equal(t, "access_token", client.Token)
+	assert.Equal(t, "", client.Username)
+	assert.Equal(t, "", client.Password)
 	assert.Equal(t, defaultUserAgent, client.UserAgent)
 }
 
@@ -79,6 +100,17 @@ func TestClient_NewRequest(t *testing.T) {
 	req, err := client.NewRequest("GET", "ips/uuid", nil)
 
 	assert.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("%v/ips/uuid", server.URL), req.URL.String())
+}
+
+func TestClient_NewRequestWithToken(t *testing.T) {
+	setupWithToken()
+	defer teardown()
+
+	req, err := client.NewRequest("GET", "ips/uuid", nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Bearer access_token", req.Header.Get("Authorization"))
 	assert.Equal(t, fmt.Sprintf("%v/ips/uuid", server.URL), req.URL.String())
 }
 

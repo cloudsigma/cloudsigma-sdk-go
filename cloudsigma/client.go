@@ -32,6 +32,7 @@ type Client struct {
 	APIEndpoint *url.URL // Endpoint for API requests. APIEndpoint should always be specified with a trailing slash.
 	UserAgent   string   // User agent used when communicating with the CloudSigma API.
 
+	Token    string // Token for CloudSigma API.
 	Username string // Username for CloudSigma API (user email).
 	Password string // Password for CloudSigma API.
 
@@ -142,6 +143,42 @@ func NewBasicAuthClient(username, password string, httpClient *http.Client) *Cli
 	return c
 }
 
+// NewTokenClient returns a new CloudSigma API client. To use API methods provide an access token.
+func NewTokenClient(token string, httpClient *http.Client) *Client {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+
+	c := &Client{
+		client:    httpClient,
+		Token:     token,
+		UserAgent: defaultUserAgent,
+	}
+	c.SetLocation(defaultLocation)
+	c.common.client = c
+
+	c.ACLs = (*ACLsService)(&c.common)
+	c.Capabilities = (*CapabilitiesService)(&c.common)
+	c.CloudStatus = (*CloudStatusService)(&c.common)
+	c.Drives = (*DrivesService)(&c.common)
+	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
+	c.IPs = (*IPsService)(&c.common)
+	c.Keypairs = (*KeypairsService)(&c.common)
+	c.Licenses = (*LicensesService)(&c.common)
+	c.LibraryDrives = (*LibraryDrivesService)(&c.common)
+	c.Locations = (*LocationsService)(&c.common)
+	c.Profile = (*ProfileService)(&c.common)
+	c.Pubkeys = (*PubkeysService)(&c.common)
+	c.RemoteSnapshots = (*RemoteSnapshotsService)(&c.common)
+	c.Servers = (*ServersService)(&c.common)
+	c.Snapshots = (*SnapshotsService)(&c.common)
+	c.Subscriptions = (*SubscriptionsService)(&c.common)
+	c.Tags = (*TagsService)(&c.common)
+	c.VLANs = (*VLANsService)(&c.common)
+
+	return c
+}
+
 // SetLocation configures location (a sub-domain) for API endpoint.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
@@ -180,7 +217,12 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
-	req.SetBasicAuth(c.Username, c.Password)
+	if len(c.Token) > 0 {
+		req.Header.Set("Authorization", "Bearer "+c.Token)
+	} else {
+		req.SetBasicAuth(c.Username, c.Password)
+	}
+
 	req.Header.Set("Accept", mediaType)
 	req.Header.Set("Content-Type", mediaType)
 	req.Header.Set("User-Agent", c.UserAgent)
