@@ -17,10 +17,10 @@ import (
 
 const (
 	libraryVersion   = "0.9.0"
+	defaultBaseURL   = "cloudsigma.com/api/2.0/"
 	defaultLocation  = "zrh"
 	defaultUserAgent = "cloudsigma-sdk-go/" + libraryVersion
 
-	baseURL         = "https://%s.cloudsigma.com/api/2.0/"
 	headerRequestID = "X-REQUEST-ID"
 	mediaType       = "application/json"
 )
@@ -118,7 +118,7 @@ func NewBasicAuthClient(username, password string, httpClient *http.Client) *Cli
 		Username:  username,
 		Password:  password,
 	}
-	c.SetLocation(defaultLocation)
+	c.SetAPIEndpoint(defaultLocation, defaultBaseURL)
 	c.common.client = c
 
 	c.ACLs = (*ACLsService)(&c.common)
@@ -154,7 +154,7 @@ func NewTokenClient(token string, httpClient *http.Client) *Client {
 		Token:     token,
 		UserAgent: defaultUserAgent,
 	}
-	c.SetLocation(defaultLocation)
+	c.SetAPIEndpoint(defaultLocation, defaultBaseURL)
 	c.common.client = c
 
 	c.ACLs = (*ACLsService)(&c.common)
@@ -182,8 +182,32 @@ func NewTokenClient(token string, httpClient *http.Client) *Client {
 // SetLocation configures location (a sub-domain) for API endpoint.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
+//
+// Deprecated: Use SetAPIEndpoint instead.
 func (c *Client) SetLocation(location string) {
-	apiEndpointURL, _ := url.Parse(fmt.Sprintf(baseURL, location))
+	baseURL := fmt.Sprintf("https://%s.%s", location, defaultBaseURL)
+	apiEndpointURL, _ := url.Parse(baseURL)
+	c.APIEndpoint = apiEndpointURL
+}
+
+// SetAPIEndpoint configures location (a sub-domain) and base url (a domain) for API endpoint.
+// Default values:
+//   - location - "zrh"
+//   - baseURL  - "cloudsigma.com/api/2.0/"
+//
+// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
+func (c *Client) SetAPIEndpoint(location, baseURL string) {
+	loc := defaultLocation
+	if location != "" {
+		loc = location
+	}
+
+	bu := defaultBaseURL
+	if baseURL != "" {
+		bu = baseURL
+	}
+
+	apiEndpointURL, _ := url.Parse(fmt.Sprintf("https://%s.%s", loc, bu))
 	c.APIEndpoint = apiEndpointURL
 }
 

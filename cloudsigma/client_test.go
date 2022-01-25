@@ -84,6 +84,33 @@ func TestClient_SetLocation(t *testing.T) {
 	assert.Equal(t, "https://wdc.cloudsigma.com/api/2.0/", client.APIEndpoint.String())
 }
 
+func TestClient_SetAPIEndpoint(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetAPIEndpoint("some.custom.location", "custom-base-url.com/api/2.0/")
+
+	assert.Equal(t, "https://some.custom.location.custom-base-url.com/api/2.0/", client.APIEndpoint.String())
+}
+
+func TestClient_SetAPIEndpoint_defaultLocation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetAPIEndpoint("", "custom-base-url.com/api/2.0/")
+
+	assert.Equal(t, "https://zrh.custom-base-url.com/api/2.0/", client.APIEndpoint.String())
+}
+
+func TestClient_SetAPIEndpoint_defaultBaseURL(t *testing.T) {
+	setup()
+	defer teardown()
+
+	client.SetAPIEndpoint("some.custom.location", "")
+
+	assert.Equal(t, "https://some.custom.location.cloudsigma.com/api/2.0/", client.APIEndpoint.String())
+}
+
 func TestClient_SetUserAgent(t *testing.T) {
 	setup()
 	defer teardown()
