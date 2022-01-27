@@ -23,6 +23,7 @@ type Server struct {
 	CPUsInsteadOfCores bool                   `json:"cpus_instead_of_cores,omitempty"`
 	Drives             []ServerDrive          `json:"drives,omitempty"`
 	EnableNuma         bool                   `json:"enable_numa,omitempty"`
+	EnclavePageCaches  []EnclavePageCache     `json:"epcs,omitempty"`
 	Hypervisor         string                 `json:"hypervisor,omitempty"`
 	Memory             int                    `json:"mem,omitempty"`
 	Meta               map[string]interface{} `json:"meta,omitempty"`
@@ -45,6 +46,11 @@ type ServerDrive struct {
 	DevChannel string `json:"dev_channel,omitempty"`
 	Device     string `json:"device,omitempty"`
 	Drive      *Drive `json:"drive,omitempty"`
+}
+
+// EnclavePageCache represents a protected memory region for enclaves in a server.
+type EnclavePageCache struct {
+	Size string `json:"size,omitempty"`
 }
 
 // ServerNIC represents a CloudSigma network interface card attached to a server.
