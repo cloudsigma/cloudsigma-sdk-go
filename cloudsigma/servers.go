@@ -50,7 +50,7 @@ type ServerDrive struct {
 
 // EnclavePageCache represents a protected memory region for enclaves in a server.
 type EnclavePageCache struct {
-	Size string `json:"size,omitempty"`
+	Size int `json:"size,omitempty"`
 }
 
 // ServerNIC represents a CloudSigma network interface card attached to a server.
