@@ -1,6 +1,6 @@
 module github.com/cloudsigma/cloudsigma-sdk-go
 
-go 1.17
+go 1.19
 
 require (
 	github.com/google/go-querystring v1.0.0

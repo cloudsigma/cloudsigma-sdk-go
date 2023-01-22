@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -214,7 +214,7 @@ func TestClient_CheckResponse_errorElements(t *testing.T) {
 		Response: &http.Response{
 			Request:    &http.Request{},
 			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(strings.NewReader(`[{"error_message":"error"}]`)),
+			Body:       io.NopCloser(strings.NewReader(`[{"error_message":"error"}]`)),
 		}}
 	expected := []Error{
 		{Message: "error"},
@@ -232,7 +232,7 @@ func TestClient_CheckResponse_errorWhenUnmarshall(t *testing.T) {
 		Response: &http.Response{
 			Request:    &http.Request{},
 			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(strings.NewReader(`{"error_message":"response is always an array of errors"}`)),
+			Body:       io.NopCloser(strings.NewReader(`{"error_message":"response is always an array of errors"}`)),
 		},
 	}
 
@@ -246,7 +246,7 @@ func TestClient_CheckResponse_noBody(t *testing.T) {
 		Response: &http.Response{
 			Request:    &http.Request{},
 			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Body:       io.NopCloser(strings.NewReader("")),
 		},
 	}
 
@@ -262,7 +262,7 @@ func TestClient_CheckResponse_noErrorStatusCode(t *testing.T) {
 		Response: &http.Response{
 			Request:    &http.Request{},
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Body:       io.NopCloser(strings.NewReader("")),
 		},
 	}
 
