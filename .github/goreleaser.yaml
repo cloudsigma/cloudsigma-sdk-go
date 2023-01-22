@@ -1,0 +1,31 @@
+project_name: cloudsigma-sdk-go
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - skip: true
+
+changelog:
+  sort: asc
+  groups:
+    - title: "Features"
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: "Others"
+      order: 999
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^Merge pull request"
+      - "^Release"
+
+release:
+  github:
+    owner: cloudsigma
+    name: cloudsigma-sdk-go
