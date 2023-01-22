@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	libraryVersion   = "0.13.0"
+	libraryVersion   = "0.13.1"
 	defaultBaseURL   = "cloudsigma.com/api/2.0/"
 	defaultLocation  = "zrh"
 	defaultUserAgent = "cloudsigma-sdk-go/" + libraryVersion
