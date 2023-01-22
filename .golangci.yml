@@ -1,19 +1,20 @@
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gofmt
-    - golint
+    - goimports
     - gosimple
     - ineffassign
     - misspell
     - staticcheck
-    - structcheck
     - unconvert
     - unused
-    - varcheck
     - vet
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/cloudsigma/cloudsigma-sdk-go
 
 output:
   format: tab
