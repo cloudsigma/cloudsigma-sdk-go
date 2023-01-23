@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,16 +27,20 @@ func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 
-	client = NewBasicAuthClient("user", "password", nil)
-	client.APIEndpoint, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
+	cred := NewUsernamePasswordCredentialsProvider("user", "password")
+	var opts []ClientOption
+	client = NewClient(cred, opts...)
+	client.baseURL, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
 func setupWithToken() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 
-	client = NewTokenClient("access_token", nil)
-	client.APIEndpoint, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
+	cred := NewTokenCredentialsProvider("access_token")
+	var opts []ClientOption
+	client = NewClient(cred, opts...)
+	client.baseURL, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
 func teardown() {
@@ -51,73 +57,34 @@ func TestClient_addOptions(t *testing.T) {
 	assert.Equal(t, "/servers/?limit=25&offset=5", pathWithOpts)
 }
 
-func TestClient_NewBasicAuthClient(t *testing.T) {
-	setup()
-	defer teardown()
+func TestClient_Defaults(t *testing.T) {
+	client := NewClient(nil)
 
-	assert.NotNil(t, client.APIEndpoint)
-	assert.Equal(t, fmt.Sprintf("%v/", server.URL), client.APIEndpoint.String())
-	assert.Equal(t, "", client.Token)
-	assert.Equal(t, "user", client.Username)
-	assert.Equal(t, "password", client.Password)
-	assert.Equal(t, defaultUserAgent, client.UserAgent)
+	assert.Equal(t, "https://zrh.cloudsigma.com/api/2.0/", client.baseURL.String())
+	assert.Contains(t, client.userAgent, "cloudsigma-sdk-go/")
+	assert.Equal(t, 0*time.Second, client.httpClient.Timeout)
 }
 
-func TestClient_NewTokenClient(t *testing.T) {
-	setupWithToken()
-	defer teardown()
+func TestClient_WithHTTPClient(t *testing.T) {
+	httpClient := &http.Client{Timeout: 2 * time.Second}
+	client := NewClient(nil, WithHTTPClient(httpClient))
 
-	assert.NotNil(t, client.APIEndpoint)
-	assert.Equal(t, fmt.Sprintf("%v/", server.URL), client.APIEndpoint.String())
-	assert.Equal(t, "access_token", client.Token)
-	assert.Equal(t, "", client.Username)
-	assert.Equal(t, "", client.Password)
-	assert.Equal(t, defaultUserAgent, client.UserAgent)
+	assert.Equal(t, httpClient, client.httpClient)
+	assert.Equal(t, 2*time.Second, client.httpClient.Timeout)
 }
 
-func TestClient_SetLocation(t *testing.T) {
-	setup()
-	defer teardown()
+func TestClient_WithLocation(t *testing.T) {
+	expectedBaseURL, _ := url.Parse("https://wdc.cloudsigma.com/api/2.0/")
+	client := NewClient(nil, WithLocation("wdc"))
 
-	client.SetLocation("wdc")
-
-	assert.Equal(t, "https://wdc.cloudsigma.com/api/2.0/", client.APIEndpoint.String())
+	assert.Equal(t, expectedBaseURL, client.baseURL)
 }
 
-func TestClient_SetAPIEndpoint(t *testing.T) {
-	setup()
-	defer teardown()
+func TestClient_WithUserAgent(t *testing.T) {
+	expectedUserAgent := "terraform-provider-cloudsigma/1.1.0-release"
+	client := NewClient(nil, WithUserAgent("terraform-provider-cloudsigma/1.1.0-release"))
 
-	client.SetAPIEndpoint("some.custom.location", "custom-base-url.com/api/2.0/")
-
-	assert.Equal(t, "https://some.custom.location.custom-base-url.com/api/2.0/", client.APIEndpoint.String())
-}
-
-func TestClient_SetAPIEndpoint_defaultLocation(t *testing.T) {
-	setup()
-	defer teardown()
-
-	client.SetAPIEndpoint("", "custom-base-url.com/api/2.0/")
-
-	assert.Equal(t, "https://zrh.custom-base-url.com/api/2.0/", client.APIEndpoint.String())
-}
-
-func TestClient_SetAPIEndpoint_defaultBaseURL(t *testing.T) {
-	setup()
-	defer teardown()
-
-	client.SetAPIEndpoint("some.custom.location", "")
-
-	assert.Equal(t, "https://some.custom.location.cloudsigma.com/api/2.0/", client.APIEndpoint.String())
-}
-
-func TestClient_SetUserAgent(t *testing.T) {
-	setup()
-	defer teardown()
-
-	client.SetUserAgent("terraform-provider-cloudsigma/1.1.0-release")
-
-	assert.Equal(t, "terraform-provider-cloudsigma/1.1.0-release", client.UserAgent)
+	assert.Equal(t, expectedUserAgent, client.userAgent)
 }
 
 func TestClient_NewRequest(t *testing.T) {
@@ -130,7 +97,7 @@ func TestClient_NewRequest(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("%v/ips/uuid", server.URL), req.URL.String())
 }
 
-func TestClient_NewRequestWithToken(t *testing.T) {
+func TestClient_NewRequest_withAccessToken(t *testing.T) {
 	setupWithToken()
 	defer teardown()
 
@@ -141,11 +108,23 @@ func TestClient_NewRequestWithToken(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("%v/ips/uuid", server.URL), req.URL.String())
 }
 
+func TestClient_NewRequest_withUsernamePassword(t *testing.T) {
+	setup()
+	defer teardown()
+	expectedAuthHeader := "Basic " + base64.StdEncoding.EncodeToString([]byte("user:password"))
+
+	req, err := client.NewRequest(http.MethodGet, "ips/uuid", nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedAuthHeader, req.Header.Get("Authorization"))
+	assert.Equal(t, fmt.Sprintf("%v/ips/uuid", server.URL), req.URL.String())
+}
+
 func TestClient_NewRequest_baseURLWithoutTrailingSlash(t *testing.T) {
 	setup()
 	defer teardown()
 
-	client.APIEndpoint, _ = url.Parse("https://zrh.cloudsigma.com/api/2.0")
+	client.baseURL, _ = url.Parse("https://zrh.cloudsigma.com/api/2.0")
 	_, err := client.NewRequest("GET", "ips/uuid", nil)
 
 	assert.Error(t, err)
@@ -155,7 +134,7 @@ func TestClient_NewRequest_invalidRequestURL(t *testing.T) {
 	setup()
 	defer teardown()
 
-	client.APIEndpoint, _ = url.Parse("/")
+	client.baseURL, _ = url.Parse("/")
 	_, err := client.NewRequest("GET", ":%31", nil)
 
 	assert.Error(t, err)

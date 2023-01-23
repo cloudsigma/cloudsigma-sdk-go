@@ -16,24 +16,26 @@ import (
 
 const (
 	libraryVersion   = "0.13.1"
-	defaultBaseURL   = "cloudsigma.com/api/2.0/"
 	defaultLocation  = "zrh"
 	defaultUserAgent = "cloudsigma-sdk-go/" + libraryVersion
 
+	// endpointURL is a URL with the placeholder for API location.
+	endpointURL     = "https://%s.cloudsigma.com/api/2.0/"
 	headerRequestID = "X-REQUEST-ID"
 	mediaType       = "application/json"
 )
 
 // A Client manages communication with the CloudSigma API.
 type Client struct {
-	client *http.Client // HTTP client used to communicate with the API.
+	// Base URL for API requests of the CloudSigma API, e.g.:
+	//   https://{location}.cloudsigma.com/api/2.0/
+	// Where {location} is a subdomain for a specific location. All available locations
+	// can be queried from Locations endpoint.
+	baseURL *url.URL
 
-	APIEndpoint *url.URL // Endpoint for API requests. APIEndpoint should always be specified with a trailing slash.
-	UserAgent   string   // User agent used when communicating with the CloudSigma API.
-
-	Token    string // Token for CloudSigma API.
-	Username string // Username for CloudSigma API (user email).
-	Password string // Password for CloudSigma API.
+	httpClient   *http.Client // HTTP client used to communicate with the API.
+	credProvider CredentialsProvider
+	userAgent    string // User agent used when communicating with the CloudSigma API.
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
@@ -95,29 +97,45 @@ func addOptions(s string, opts interface{}) (string, error) {
 	return u.String(), nil
 }
 
-// Response is a CloudSigma response. This wraps the standard http.Response.
-type Response struct {
-	*http.Response
+type ClientOption func(*Client)
 
-	Meta *Meta // Meta describes generic information about the response.
-
-	RequestID string // RequestID returned from the API, useful to contact support.
+// WithHTTPClient configures Client to use a specific http client for communication.
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(client *Client) {
+		client.httpClient = httpClient
+	}
 }
 
-// NewBasicAuthClient returns a new CloudSigma API client. To use API methods provide username (your email)
-// and password.
-func NewBasicAuthClient(username, password string, httpClient *http.Client) *Client {
-	if httpClient == nil {
-		httpClient = http.DefaultClient
+// WithLocation configures Client to use a specific location.
+func WithLocation(location string) ClientOption {
+	return func(client *Client) {
+		parsedURL, _ := url.Parse(fmt.Sprintf(endpointURL, location))
+		client.baseURL = parsedURL
 	}
+}
+
+// WithUserAgent configures Client to use a specific user agent.
+func WithUserAgent(userAgent string) ClientOption {
+	return func(client *Client) {
+		client.userAgent = userAgent
+	}
+}
+
+// NewClient returns a new CloudSigma API client.
+func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
+	baseURL, _ := url.Parse(fmt.Sprintf(endpointURL, defaultLocation))
+	httpClient := http.DefaultClient
 
 	c := &Client{
-		client:    httpClient,
-		UserAgent: defaultUserAgent,
-		Username:  username,
-		Password:  password,
+		baseURL:      baseURL,
+		httpClient:   httpClient,
+		credProvider: cred,
+		userAgent:    defaultUserAgent,
 	}
-	c.SetAPIEndpoint(defaultLocation, defaultBaseURL)
+	for _, opt := range opts {
+		opt(c)
+	}
+
 	c.common.client = c
 
 	c.ACLs = (*ACLsService)(&c.common)
@@ -140,89 +158,16 @@ func NewBasicAuthClient(username, password string, httpClient *http.Client) *Cli
 	c.VLANs = (*VLANsService)(&c.common)
 
 	return c
-}
-
-// NewTokenClient returns a new CloudSigma API client. To use API methods provide an access token.
-func NewTokenClient(token string, httpClient *http.Client) *Client {
-	if httpClient == nil {
-		httpClient = http.DefaultClient
-	}
-
-	c := &Client{
-		client:    httpClient,
-		Token:     token,
-		UserAgent: defaultUserAgent,
-	}
-	c.SetAPIEndpoint(defaultLocation, defaultBaseURL)
-	c.common.client = c
-
-	c.ACLs = (*ACLsService)(&c.common)
-	c.Capabilities = (*CapabilitiesService)(&c.common)
-	c.CloudStatus = (*CloudStatusService)(&c.common)
-	c.Drives = (*DrivesService)(&c.common)
-	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
-	c.IPs = (*IPsService)(&c.common)
-	c.Keypairs = (*KeypairsService)(&c.common)
-	c.Licenses = (*LicensesService)(&c.common)
-	c.LibraryDrives = (*LibraryDrivesService)(&c.common)
-	c.Locations = (*LocationsService)(&c.common)
-	c.Profile = (*ProfileService)(&c.common)
-	c.Pubkeys = (*PubkeysService)(&c.common)
-	c.RemoteSnapshots = (*RemoteSnapshotsService)(&c.common)
-	c.Servers = (*ServersService)(&c.common)
-	c.Snapshots = (*SnapshotsService)(&c.common)
-	c.Subscriptions = (*SubscriptionsService)(&c.common)
-	c.Tags = (*TagsService)(&c.common)
-	c.VLANs = (*VLANsService)(&c.common)
-
-	return c
-}
-
-// SetLocation configures location (a sub-domain) for API endpoint.
-//
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
-//
-// Deprecated: Use SetAPIEndpoint instead.
-func (c *Client) SetLocation(location string) {
-	baseURL := fmt.Sprintf("https://%s.%s", location, defaultBaseURL)
-	apiEndpointURL, _ := url.Parse(baseURL)
-	c.APIEndpoint = apiEndpointURL
-}
-
-// SetAPIEndpoint configures location (a sub-domain) and base url (a domain) for API endpoint.
-// Default values:
-//   - location - "zrh"
-//   - baseURL  - "cloudsigma.com/api/2.0/"
-//
-// CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/general.html#api-endpoint.
-func (c *Client) SetAPIEndpoint(location, baseURL string) {
-	loc := defaultLocation
-	if location != "" {
-		loc = location
-	}
-
-	bu := defaultBaseURL
-	if baseURL != "" {
-		bu = baseURL
-	}
-
-	apiEndpointURL, _ := url.Parse(fmt.Sprintf("https://%s.%s", loc, bu))
-	c.APIEndpoint = apiEndpointURL
-}
-
-// SetUserAgent overrides the default UserAgent.
-func (c *Client) SetUserAgent(ua string) {
-	c.UserAgent = ua
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr, in which case it is resolved
 // relative to the APIEndpoint of the Client. Relative URLs should always be specified without a preceding slash.
 // If specified, the value pointed to by body is JSON encoded and included as the request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	if !strings.HasSuffix(c.APIEndpoint.Path, "/") {
-		return nil, fmt.Errorf("APIEndpoint must have a trailing slash, but %q does not", c.APIEndpoint)
+	if !strings.HasSuffix(c.baseURL.Path, "/") {
+		return nil, fmt.Errorf("baseURL must have a trailing slash, but %q does not", c.baseURL)
 	}
-	u, err := c.APIEndpoint.Parse(urlStr)
+	u, err := c.baseURL.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -240,24 +185,40 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
-	if len(c.Token) > 0 {
-		req.Header.Set("Authorization", "Bearer "+c.Token)
-	} else {
-		req.SetBasicAuth(c.Username, c.Password)
+	credentials, err := c.credProvider.Retrieve()
+	if err != nil {
+		return nil, err
+	}
+
+	switch credentials.Source {
+	case UsernamePasswordCredentialsName:
+		req.SetBasicAuth(credentials.Username, credentials.Password)
+
+	case TokenCredentialsName:
+		req.Header.Set("Authorization", "Bearer "+credentials.Token)
 	}
 
 	req.Header.Set("Accept", mediaType)
 	req.Header.Set("Content-Type", mediaType)
-	req.Header.Set("User-Agent", c.UserAgent)
+	req.Header.Set("User-Agent", c.userAgent)
 
 	return req, nil
+}
+
+// Response is a CloudSigma response. This wraps the standard http.Response.
+type Response struct {
+	*http.Response
+
+	Meta *Meta // Meta describes generic information about the response.
+
+	RequestID string // RequestID returned from the API, useful to contact support.
 }
 
 // Do sends an API request and returns the API response. The API response is JSON decoded and stored in
 // the value pointed to by v, or returned as an error if an API error has occurred.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
 	req = req.WithContext(ctx)
-	resp, err := c.client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		// if we got an error, and the context has been canceled, the context's error is more useful.
 		select {
