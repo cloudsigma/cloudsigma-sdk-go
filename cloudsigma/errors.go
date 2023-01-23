@@ -9,10 +9,10 @@ import (
 var (
 	// ErrEmptyPayloadNotAllowed is returned when a request body is empty
 	// and does not contain a mandatory JSON payload.
-	ErrEmptyPayloadNotAllowed = errors.New("cloudsigma: empty payload not allowed")
+	ErrEmptyPayloadNotAllowed = errors.New("cloudsigma-sdk-go: empty payload not allowed")
 
 	// ErrEmptyArgument is returned when a mandatory function argument is empty.
-	ErrEmptyArgument = errors.New("cloudsigma: argument cannot be empty")
+	ErrEmptyArgument = errors.New("cloudsigma-sdk-go: argument cannot be empty")
 )
 
 // An ErrorResponse reports one or more errors caused by an API request.
