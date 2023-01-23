@@ -33,7 +33,19 @@ Currently, HTTP Basic Authentication is the only method of authenticating
 with the API. You can then use your credentials to create a new client:
 
 ```go
-client := cloudsigma.NewBasicAuthClient("my-user@my-domain.com", "my-secure-password")
+cred := cloudsigma.NewUsernamePasswordCredentialsProvider("my-user@my-domain.com", "my-secure-password")
+client := cloudsigma.NewClient(cred)
+```
+
+If you want to specify more parameters by client initialization, use
+`With...` methods and pass via option pattern:
+
+```go
+cred := cloudsigma.NewUsernamePasswordCredentialsProvider("my-user@my-domain.com", "my-secure-password")
+client := cloudsigma.NewClient(cred,
+  cloudsigma.WithLocation("fra"),
+  cloudsigma.WithHTTPClient(customHTTPClient),
+)
 ```
 
 ### Examples
@@ -41,10 +53,11 @@ client := cloudsigma.NewBasicAuthClient("my-user@my-domain.com", "my-secure-pass
 List all servers for the user.
 ```go
 func main() {
-  ctx := context.Background()
-  client := cloudsigma.NewBasicAuthClient("my-user@my-domain.com", "my-secure-password")
+  cred := cloudsigma.NewUsernamePasswordCredentialsProvider("my-user@my-domain.com", "my-secure-password")
+  client := cloudsigma.NewClient(cred)
 
   // list all servers for the authenticated user
+  ctx := context.Background()
   servers, _, err := client.Servers.List(ctx)
 }
 ```
