@@ -4,13 +4,15 @@ PROJECT_NAME := cloudsigma-sdk-go
 # Build variables
 .DEFAULT_GOAL = test
 BUILD_DIR := build
+TOOLS_DIR := $(shell pwd)/tools
+TOOLS_BIN_DIR := ${TOOLS_DIR}/bin
 
 
 ## tools: Install required tooling.
 .PHONY: tools
 tools:
 	@echo "==> Installing required tooling..."
-	@cd tools && go install github.com/golangci/golangci-lint/cmd/golangci-lint
+	@cd ${TOOLS_DIR} && GOBIN=${TOOLS_BIN_DIR} go install github.com/golangci/golangci-lint/cmd/golangci-lint
 
 ## clean: Delete the build directory.
 .PHONY: clean
@@ -22,7 +24,7 @@ clean:
 .PHONY: lint
 lint:
 	@echo "==> Linting code with 'golangci-lint'..."
-	@golangci-lint run ./...
+	@${TOOLS_BIN_DIR}/golangci-lint run
 
 ## test: Run all tests.
 .PHONY: test
