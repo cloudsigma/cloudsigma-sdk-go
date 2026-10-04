@@ -70,8 +70,8 @@ type DriveListOptions struct {
 }
 
 type drivesRoot struct {
-	Drives []Drive `json:"objects"`
-	Meta   *Meta   `json:"meta,omitempty"`
+	Drives []driveResponse `json:"objects"`
+	Meta   *Meta           `json:"meta,omitempty"`
 }
 
 func (d Drive) String() string {
@@ -103,7 +103,7 @@ func (s *DrivesService) List(ctx context.Context, opts *DriveListOptions) ([]Dri
 		resp.Meta = m
 	}
 
-	return root.Drives, resp, nil
+	return root.values(), resp, nil
 }
 
 // Get provides detailed information for drive identified by uuid.
@@ -121,13 +121,13 @@ func (s *DrivesService) Get(ctx context.Context, uuid string) (*Drive, *Response
 		return nil, nil, err
 	}
 
-	drive := new(Drive)
+	drive := new(driveResponse)
 	resp, err := s.client.Do(ctx, req, drive)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return drive, resp, nil
+	return (*Drive)(drive), resp, nil
 }
 
 // Create makes a new drive (or drives) with given payload.
@@ -145,13 +145,13 @@ func (s *DrivesService) Create(ctx context.Context, createRequest *DriveCreateRe
 		return nil, nil, err
 	}
 
-	root := new(DriveCreateRequest)
+	root := new(drivesRoot)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return root.Drives, resp, nil
+	return root.values(), resp, nil
 }
 
 // Update edits a drive identified by uuid. Note that if the drive is mounted
@@ -177,13 +177,13 @@ func (s *DrivesService) Update(ctx context.Context, uuid string, updateRequest *
 		return nil, nil, err
 	}
 
-	drive := new(Drive)
+	drive := new(driveResponse)
 	resp, err := s.client.Do(ctx, req, drive)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return drive, resp, nil
+	return (*Drive)(drive), resp, nil
 }
 
 // Delete removes a single drive identified by uuid.
@@ -230,7 +230,7 @@ func (s *DrivesService) Resize(ctx context.Context, uuid string, updateRequest *
 		return nil, resp, err
 	}
 
-	return root.Drives, resp, nil
+	return root.values(), resp, nil
 }
 
 // Clone duplicates a drive. DriveCloneRequest is optional. Size of the
@@ -261,5 +261,16 @@ func (s *DrivesService) Clone(ctx context.Context, uuid string, cloneRequest *Dr
 		return nil, resp, err
 	}
 
-	return &root.Drives[0], resp, nil
+	return (*Drive)(&root.Drives[0]), resp, nil
+}
+
+func (r *drivesRoot) values() []Drive {
+	if r.Drives == nil {
+		return nil
+	}
+	values := make([]Drive, len(r.Drives))
+	for i := range values {
+		values[i] = Drive(r.Drives[i])
+	}
+	return values
 }

@@ -106,8 +106,8 @@ type ServerUpdateRequest struct {
 }
 
 type serversRoot struct {
-	Meta    *Meta    `json:"meta,omitempty"`
-	Servers []Server `json:"objects"`
+	Meta    *Meta            `json:"meta,omitempty"`
+	Servers []serverResponse `json:"objects"`
 }
 
 // List provides a detailed list of servers to which the authenticated user
@@ -131,7 +131,7 @@ func (s *ServersService) List(ctx context.Context) ([]Server, *Response, error) 
 		resp.Meta = m
 	}
 
-	return root.Servers, resp, nil
+	return root.values(), resp, nil
 }
 
 // Get provides detailed information for server identified by uuid.
@@ -149,13 +149,13 @@ func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *Respon
 		return nil, nil, err
 	}
 
-	server := new(Server)
+	server := new(serverResponse)
 	resp, err := s.client.Do(ctx, req, server)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return server, resp, nil
+	return (*Server)(server), resp, nil
 }
 
 // Create makes a new virtual server with given payload.
@@ -173,13 +173,13 @@ func (s *ServersService) Create(ctx context.Context, createRequest *ServerCreate
 		return nil, nil, err
 	}
 
-	root := new(ServerCreateRequest)
+	root := new(serversRoot)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return root.Servers, resp, nil
+	return root.values(), resp, nil
 }
 
 // Update edits a server identified by uuid. Used also for attaching NIC’s
@@ -206,13 +206,13 @@ func (s *ServersService) Update(ctx context.Context, uuid string, updateRequest 
 		return nil, nil, err
 	}
 
-	server := new(Server)
+	server := new(serverResponse)
 	resp, err := s.client.Do(ctx, req, server)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return server, resp, nil
+	return (*Server)(server), resp, nil
 }
 
 // Delete removes a single server identified by uuid.
@@ -273,4 +273,15 @@ func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*Se
 	}
 
 	return serverAction, resp, nil
+}
+
+func (r *serversRoot) values() []Server {
+	if r.Servers == nil {
+		return nil
+	}
+	values := make([]Server, len(r.Servers))
+	for i := range values {
+		values[i] = Server(r.Servers[i])
+	}
+	return values
 }
