@@ -23,28 +23,49 @@ var (
 	server *httptest.Server
 )
 
+// fixtureTransport executes the test handler in memory: HTTPS URL semantics,
+// no listening socket, TLS bypass or production transport changes. The handler
+// runs synchronously; cancellation is checked before/after, not used to preempt
+// an uncooperative blocked handler.
+type fixtureTransport struct{ handler http.Handler }
+
+func (f fixtureTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if err := req.Context().Err(); err != nil {
+		return nil, err
+	}
+	recorder := httptest.NewRecorder()
+	f.handler.ServeHTTP(recorder, req)
+	response := recorder.Result()
+	response.Request = req
+	if err := req.Context().Err(); err != nil {
+		_ = response.Body.Close()
+		return nil, err
+	}
+	return response, nil
+}
+
 func setup() {
 	mux = http.NewServeMux()
-	server = httptest.NewServer(mux)
+	server = &httptest.Server{URL: "https://sdk-fixture.invalid"}
 
 	cred := NewUsernamePasswordCredentialsProvider("user", "password")
-	var opts []ClientOption
+	opts := []ClientOption{WithHTTPClient(&http.Client{Transport: fixtureTransport{handler: mux}})}
 	client = NewClient(cred, opts...)
 	client.baseURL, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
 func setupWithToken() {
 	mux = http.NewServeMux()
-	server = httptest.NewServer(mux)
+	server = &httptest.Server{URL: "https://sdk-fixture.invalid"}
 
 	cred := NewTokenCredentialsProvider("access_token")
-	var opts []ClientOption
+	opts := []ClientOption{WithHTTPClient(&http.Client{Transport: fixtureTransport{handler: mux}})}
 	client = NewClient(cred, opts...)
 	client.baseURL, _ = url.Parse(fmt.Sprintf("%v/", server.URL))
 }
 
 func teardown() {
-	server.Close()
+	// In-memory fixture owns no listener or network resources.
 }
 
 func TestClient_addOptions(t *testing.T) {
@@ -74,7 +95,7 @@ func TestClient_WithHTTPClient(t *testing.T) {
 }
 
 func TestClient_WithLocation(t *testing.T) {
-	expectedBaseURL, _ := url.Parse("https://wdc.cloudsigma.com/api/2.0/")
+	expectedBaseURL, _ := url.Parse("https://wdc.alpha3cloud.com/api/2.0/")
 	client := NewClient(nil, WithLocation("wdc"))
 
 	assert.Equal(t, expectedBaseURL, client.baseURL)
