@@ -31,7 +31,8 @@ type Client struct {
 	//   https://{location}.cloudsigma.com/api/2.0/
 	// Where {location} is a subdomain for a specific location. All available locations
 	// can be queried from Locations endpoint.
-	baseURL *url.URL
+	baseURL     *url.URL
+	endpointErr error
 
 	httpClient   *http.Client // HTTP client used to communicate with the API.
 	credProvider CredentialsProvider
@@ -106,11 +107,28 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
-// WithLocation configures Client to use a specific location.
+// WithLocation selects a DNS-label location code, case-insensitively. Documented
+// partner locations use their published endpoints; other labels retain the
+// standard cloudsigma.com pattern. Use WithEndpoint for an explicit custom URL.
 func WithLocation(location string) ClientOption {
 	return func(client *Client) {
-		parsedURL, _ := url.Parse(fmt.Sprintf(endpointURL, location))
-		client.baseURL = parsedURL
+		location = strings.ToLower(location)
+		if !locationLabel.MatchString(location) {
+			client.endpointErr = fmt.Errorf("invalid location code")
+			return
+		}
+		host := location + ".cloudsigma.com"
+		switch location {
+		case "dub":
+			host = "ec.servecentric.com"
+		case "ruh":
+			host = "ruh.cld.v2.sa"
+		case "adb":
+			host = "siaflex.cloud"
+		case "wdc":
+			host = "wdc.alpha3cloud.com"
+		}
+		WithEndpoint("https://" + host + "/api/2.0/")(client)
 	}
 }
 
@@ -164,11 +182,23 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 // relative to the APIEndpoint of the Client. Relative URLs should always be specified without a preceding slash.
 // If specified, the value pointed to by body is JSON encoded and included as the request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	if !strings.HasSuffix(c.baseURL.Path, "/") {
-		return nil, fmt.Errorf("baseURL must have a trailing slash, but %q does not", c.baseURL)
+	if c.endpointErr != nil {
+		return nil, c.endpointErr
 	}
-	u, err := c.baseURL.Parse(urlStr)
+	if err := validateEndpoint(c.baseURL); err != nil {
+		return nil, err
+	}
+	// Network-path references and fragments are ambiguous API inputs, not custom
+	// endpoint selection. Absolute same-origin URLs and root-relative paths work.
+	ref, err := url.Parse(urlStr)
 	if err != nil {
+		return nil, fmt.Errorf("invalid API request URL")
+	}
+	if strings.HasPrefix(urlStr, "//") || strings.ContainsAny(urlStr, "#\\") {
+		return nil, fmt.Errorf("ambiguous API request URL")
+	}
+	u := c.baseURL.ResolveReference(ref)
+	if err := c.validateDestination(&http.Request{URL: u}); err != nil {
 		return nil, err
 	}
 
@@ -185,6 +215,9 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		return nil, err
 	}
 
+	if c.credProvider == nil {
+		return nil, fmt.Errorf("nil credentials provider")
+	}
 	credentials, err := c.credProvider.Retrieve()
 	if err != nil {
 		return nil, err
@@ -217,8 +250,11 @@ type Response struct {
 // Do sends an API request and returns the API response. The API response is JSON decoded and stored in
 // the value pointed to by v, or returned as an error if an API error has occurred.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+	if err := c.validateDestination(req); err != nil {
+		return nil, err
+	}
 	req = req.WithContext(ctx)
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.guardedHTTPClient().Do(req)
 	if err != nil {
 		// if we got an error, and the context has been canceled, the context's error is more useful.
 		select {
