@@ -28,8 +28,8 @@ type License struct {
 }
 
 type licensesRoot struct {
-	Licenses []License `json:"objects"`
-	Meta     *Meta     `json:"meta,omitempty"`
+	Licenses []licenseResponse `json:"objects"`
+	Meta     *Meta             `json:"meta,omitempty"`
 }
 
 // List  provides a list of licenses available on the cloud.
@@ -52,5 +52,16 @@ func (s *LicensesService) List(ctx context.Context) ([]License, *Response, error
 		resp.Meta = m
 	}
 
-	return root.Licenses, resp, nil
+	return root.values(), resp, nil
+}
+
+func (r *licensesRoot) values() []License {
+	if r.Licenses == nil {
+		return nil
+	}
+	values := make([]License, len(r.Licenses))
+	for i := range values {
+		values[i] = License(r.Licenses[i])
+	}
+	return values
 }

@@ -51,8 +51,8 @@ type SnapshotUpdateRequest struct {
 }
 
 type snapshotsRoot struct {
-	Meta      *Meta      `json:"meta,omitempty"`
-	Snapshots []Snapshot `json:"objects"`
+	Meta      *Meta              `json:"meta,omitempty"`
+	Snapshots []snapshotResponse `json:"objects"`
 }
 
 func (s Snapshot) String() string {
@@ -80,7 +80,7 @@ func (s *SnapshotsService) List(ctx context.Context) ([]Snapshot, *Response, err
 		resp.Meta = m
 	}
 
-	return root.Snapshots, resp, nil
+	return root.values(), resp, nil
 }
 
 // Get provides detailed information for snapshot identified by uuid.
@@ -98,13 +98,13 @@ func (s *SnapshotsService) Get(ctx context.Context, uuid string) (*Snapshot, *Re
 		return nil, nil, err
 	}
 
-	snapshot := new(Snapshot)
+	snapshot := new(snapshotResponse)
 	resp, err := s.client.Do(ctx, req, snapshot)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return snapshot, resp, nil
+	return (*Snapshot)(snapshot), resp, nil
 }
 
 // Create makes a new snapshot with given payload.
@@ -122,13 +122,13 @@ func (s *SnapshotsService) Create(ctx context.Context, createRequest *SnapshotCr
 		return nil, nil, err
 	}
 
-	root := new(SnapshotCreateRequest)
+	root := new(snapshotsRoot)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return root.Snapshots, resp, nil
+	return root.values(), resp, nil
 }
 
 // Update edits a snapshot identified by uuid.
@@ -152,13 +152,13 @@ func (s *SnapshotsService) Update(ctx context.Context, uuid string, updateReques
 		return nil, nil, err
 	}
 
-	snapshot := new(Snapshot)
+	snapshot := new(snapshotResponse)
 	resp, err := s.client.Do(ctx, req, snapshot)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return snapshot, resp, nil
+	return (*Snapshot)(snapshot), resp, nil
 }
 
 // Delete removes a snapshot identified by uuid.
@@ -177,4 +177,15 @@ func (s *SnapshotsService) Delete(ctx context.Context, uuid string) (*Response, 
 	}
 
 	return s.client.Do(ctx, req, nil)
+}
+
+func (r *snapshotsRoot) values() []Snapshot {
+	if r.Snapshots == nil {
+		return nil
+	}
+	values := make([]Snapshot, len(r.Snapshots))
+	for i := range values {
+		values[i] = Snapshot(r.Snapshots[i])
+	}
+	return values
 }

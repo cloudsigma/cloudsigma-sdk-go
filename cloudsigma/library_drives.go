@@ -77,8 +77,8 @@ type LibraryDriveListOptions struct {
 }
 
 type libraryDrivesRoot struct {
-	LibraryDrives []LibraryDrive `json:"objects"`
-	Meta          *Meta          `json:"meta,omitempty"`
+	LibraryDrives []libraryDriveResponse `json:"objects"`
+	Meta          *Meta                  `json:"meta,omitempty"`
 }
 
 func (l LibraryDrive) String() string {
@@ -109,7 +109,7 @@ func (s *LibraryDrivesService) List(ctx context.Context, opts *LibraryDriveListO
 		resp.Meta = m
 	}
 
-	return root.LibraryDrives, resp, nil
+	return root.values(), resp, nil
 }
 
 // Get provides detailed information for library drive identified by uuid.
@@ -127,13 +127,13 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 		return nil, nil, err
 	}
 
-	libdrive := new(LibraryDrive)
+	libdrive := new(libraryDriveResponse)
 	resp, err := s.client.Do(ctx, req, libdrive)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return libdrive, resp, nil
+	return (*LibraryDrive)(libdrive), resp, nil
 }
 
 // Clone duplicates a drive. LibraryDriveCloneRequest is optional. Size of the
@@ -164,5 +164,16 @@ func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, cloneRequ
 		return nil, resp, err
 	}
 
-	return &root.LibraryDrives[0], resp, nil
+	return (*LibraryDrive)(&root.LibraryDrives[0]), resp, nil
+}
+
+func (r *libraryDrivesRoot) values() []LibraryDrive {
+	if r.LibraryDrives == nil {
+		return nil
+	}
+	values := make([]LibraryDrive, len(r.LibraryDrives))
+	for i := range values {
+		values[i] = LibraryDrive(r.LibraryDrives[i])
+	}
+	return values
 }
