@@ -144,6 +144,7 @@ func TestVLANGetUpdateBoundaries(t *testing.T) {
 		})
 	}
 }
+
 // Legacy characterization only, not normative API behavior: empty Meta encodes
 // {}, so it cannot express documented empty full metadata replacement; a nil
 // embedded VLAN also encodes {}. Response-field echo is NOT authorized by the
