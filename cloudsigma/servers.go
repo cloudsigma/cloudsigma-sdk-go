@@ -255,6 +255,10 @@ func (s *ServersService) Shutdown(ctx context.Context, uuid string) (*ServerActi
 }
 
 func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*ServerAction, *Response, error) {
+	return s.doActionAvoid(ctx, uuid, action, nil)
+}
+
+func (s *ServersService) doActionAvoid(ctx context.Context, uuid, action string, avoid []string) (*ServerAction, *Response, error) {
 	if uuid == "" || action == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -267,7 +271,11 @@ func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*Se
 		}
 	}
 
-	path := fmt.Sprintf("%v/%v/action/?do=%v", serversBasePath, uuid, action)
+	suffix, err := serverAvoidQuery(avoid)
+	if err != nil {
+		return nil, nil, err
+	}
+	path := fmt.Sprintf("%v/%v/action/?do=%v", serversBasePath, uuid, action) + suffix
 
 	// The public Start/Stop/Shutdown examples specify an empty JSON object.
 	// A successful acknowledgment does not establish lifecycle completion.
