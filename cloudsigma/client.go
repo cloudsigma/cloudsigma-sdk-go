@@ -46,6 +46,7 @@ type Client struct {
 	CloudStatus      *CloudStatusService
 	Drives           *DrivesService
 	FirewallPolicies *FirewallPoliciesService
+	VirtualRouters   *VirtualRoutersService
 	IPs              *IPsService
 	Keypairs         *KeypairsService
 	Licenses         *LicensesService
@@ -162,6 +163,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.CloudStatus = (*CloudStatusService)(&c.common)
 	c.Drives = (*DrivesService)(&c.common)
 	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
+	c.VirtualRouters = (*VirtualRoutersService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
 	c.Keypairs = (*KeypairsService)(&c.common)
 	c.Licenses = (*LicensesService)(&c.common)
