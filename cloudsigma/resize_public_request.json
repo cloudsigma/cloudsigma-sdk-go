@@ -1,0 +1,28 @@
+{
+  "affinities": [],
+  "allow_multimount": false,
+  "grantees": [],
+  "jobs": [],
+  "licenses": [],
+  "media": "disk",
+  "meta": {},
+  "mounted_on": [],
+  "name": "test_drive_1",
+  "owner": {
+    "resource_uri": "/api/2.0/user/5b4a69a3-8e78-4c45-a8ba-8b13f0895e23/",
+    "uuid": "5b4a69a3-8e78-4c45-a8ba-8b13f0895e23"
+  },
+  "permissions": [],
+  "resource_uri": "/api/2.0/drives/df170528-c34d-4009-a806-c7d85c78cad8/",
+  "runtime": {
+    "is_snapshotable": null,
+    "snapshots_allocated_size": 0,
+    "storage_type": "dssd"
+  },
+  "size": 4294967296,
+  "snapshots": [],
+  "status": "creating",
+  "storage_type": "dssd",
+  "tags": [],
+  "uuid": "df170528-c34d-4009-a806-c7d85c78cad8"
+}

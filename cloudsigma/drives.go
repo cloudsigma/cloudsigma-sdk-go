@@ -261,6 +261,10 @@ func (s *DrivesService) Clone(ctx context.Context, uuid string, cloneRequest *Dr
 		return nil, resp, err
 	}
 
+	if len(root.Drives) == 0 {
+		return nil, resp, fmt.Errorf("clone response contains no drives")
+	}
+
 	return (*Drive)(&root.Drives[0]), resp, nil
 }
 
