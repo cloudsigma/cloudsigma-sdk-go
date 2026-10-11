@@ -2,6 +2,7 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -16,6 +17,11 @@ type ServersService service
 
 // Server represents a CloudSigma server.
 type Server struct {
+	// Jobs is response-only raw JSON captured by SDK service decoders.
+	// It is excluded from request marshaling and direct json.Unmarshal.
+	// Nil means absent; explicit null and empty arrays remain distinguishable.
+	// No job schema or completion semantics are inferred.
+	Jobs               json.RawMessage        `json:"-"`
 	AutoStart          bool                   `json:"auto_start,omitempty"`
 	Context            bool                   `json:"context,omitempty"`
 	CPU                int                    `json:"cpu,omitempty"`

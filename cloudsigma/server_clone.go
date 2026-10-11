@@ -16,7 +16,7 @@ type ServerCloneRequest map[string]json.RawMessage
 // definition using the existing private server decoder. Nil options omit the
 // optional body; an empty map sends {}. No required fields are invented.
 // HTTP 202 is acceptance, not completion. No polling or live followups occur.
-// The existing Server model ignores unmodeled fields (including jobs); this is
+// The existing Server model ignores other unmodeled fields; this is
 // not a raw full-response interface. Caller options must not mutate concurrently.
 // IDs use ASCII letters/digits/hyphen/underscore SDK policy, not UUID grammar.
 // Docs: https://docs.cloudsigma.com/en/latest/servers.html#cloning
