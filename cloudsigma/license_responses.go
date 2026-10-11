@@ -182,11 +182,13 @@ func (r *serverResponse) UnmarshalJSON(data []byte) error {
 	}
 	wire := struct {
 		*alias
+		Jobs   json.RawMessage       `json:"jobs"`
 		Drives []serverDriveResponse `json:"drives"`
-	}{&decoded, nested}
+	}{&decoded, nil, nested}
 	if err := json.Unmarshal(data, &wire); err != nil {
 		return err
 	}
+	decoded.Jobs = append(json.RawMessage(nil), wire.Jobs...)
 	decoded.Drives = nil
 	if wire.Drives != nil {
 		decoded.Drives = make([]ServerDrive, len(wire.Drives))
