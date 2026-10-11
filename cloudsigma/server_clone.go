@@ -21,6 +21,10 @@ type ServerCloneRequest map[string]json.RawMessage
 // IDs use ASCII letters/digits/hyphen/underscore SDK policy, not UUID grammar.
 // Docs: https://docs.cloudsigma.com/en/latest/servers.html#cloning
 func (s *ServersService) Clone(ctx context.Context, id string, options ServerCloneRequest) (*Server, *Response, error) {
+	return s.cloneAvoid(ctx, id, options, nil)
+}
+
+func (s *ServersService) cloneAvoid(ctx context.Context, id string, options ServerCloneRequest, avoid []string) (*Server, *Response, error) {
 	if id == "" {
 		return nil, nil, ErrEmptyArgument
 	}
@@ -28,6 +32,10 @@ func (s *ServersService) Clone(ctx context.Context, id string, options ServerClo
 		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_') {
 			return nil, nil, fmt.Errorf("invalid server identifier")
 		}
+	}
+	suffix, err := serverAvoidQuery(avoid)
+	if err != nil {
+		return nil, nil, err
 	}
 	var body interface{}
 	if options != nil {
@@ -40,7 +48,7 @@ func (s *ServersService) Clone(ctx context.Context, id string, options ServerClo
 		}
 		body = snapshot
 	}
-	req, err := s.client.NewRequest(http.MethodPost, fmt.Sprintf("servers/%s/action/?do=clone", id), body)
+	req, err := s.client.NewRequest(http.MethodPost, fmt.Sprintf("servers/%s/action/?do=clone", id)+suffix, body)
 	if err != nil {
 		return nil, nil, err
 	}
