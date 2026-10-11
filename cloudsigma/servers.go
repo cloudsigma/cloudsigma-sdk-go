@@ -261,7 +261,9 @@ func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*Se
 
 	path := fmt.Sprintf("%v/%v/action/?do=%v", serversBasePath, uuid, action)
 
-	req, err := s.client.NewRequest(http.MethodPost, path, nil)
+	// The public Start/Stop/Shutdown examples specify an empty JSON object.
+	// A successful acknowledgment does not establish lifecycle completion.
+	req, err := s.client.NewRequest(http.MethodPost, path, struct{}{})
 	if err != nil {
 		return nil, nil, err
 	}
