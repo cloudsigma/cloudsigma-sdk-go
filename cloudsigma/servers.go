@@ -259,6 +259,14 @@ func (s *ServersService) doAction(ctx context.Context, uuid, action string) (*Se
 		return nil, nil, ErrEmptyArgument
 	}
 
+	// SDK route-segment policy, not public UUID grammar. This intentionally
+	// rejects previously accepted arbitrary nonempty strings before construction.
+	for _, c := range uuid {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_') {
+			return nil, nil, fmt.Errorf("invalid server identifier")
+		}
+	}
+
 	path := fmt.Sprintf("%v/%v/action/?do=%v", serversBasePath, uuid, action)
 
 	// The public Start/Stop/Shutdown examples specify an empty JSON object.
