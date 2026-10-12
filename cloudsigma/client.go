@@ -40,26 +40,27 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
-	BackupSchedulers *BackupSchedulersService
-	ACLs             *ACLsService
-	Capabilities     *CapabilitiesService
-	CloudStatus      *CloudStatusService
-	Drives           *DrivesService
-	FirewallPolicies *FirewallPoliciesService
-	VirtualRouters   *VirtualRoutersService
-	IPs              *IPsService
-	Keypairs         *KeypairsService
-	Licenses         *LicensesService
-	LibraryDrives    *LibraryDrivesService
-	Locations        *LocationsService
-	Profile          *ProfileService
-	Pubkeys          *PubkeysService
-	RemoteSnapshots  *RemoteSnapshotsService
-	Servers          *ServersService
-	Snapshots        *SnapshotsService
-	Subscriptions    *SubscriptionsService
-	Tags             *TagsService
-	VLANs            *VLANsService
+	BackupSchedulers      *BackupSchedulersService
+	ACLs                  *ACLsService
+	Capabilities          *CapabilitiesService
+	CloudStatus           *CloudStatusService
+	Drives                *DrivesService
+	FirewallPolicies      *FirewallPoliciesService
+	VirtualRouterPolicies *VirtualRouterPoliciesService
+	VirtualRouters        *VirtualRoutersService
+	IPs                   *IPsService
+	Keypairs              *KeypairsService
+	Licenses              *LicensesService
+	LibraryDrives         *LibraryDrivesService
+	Locations             *LocationsService
+	Profile               *ProfileService
+	Pubkeys               *PubkeysService
+	RemoteSnapshots       *RemoteSnapshotsService
+	Servers               *ServersService
+	Snapshots             *SnapshotsService
+	Subscriptions         *SubscriptionsService
+	Tags                  *TagsService
+	VLANs                 *VLANsService
 }
 
 type service struct {
@@ -163,6 +164,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.CloudStatus = (*CloudStatusService)(&c.common)
 	c.Drives = (*DrivesService)(&c.common)
 	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
+	c.VirtualRouterPolicies = (*VirtualRouterPoliciesService)(&c.common)
 	c.VirtualRouters = (*VirtualRoutersService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
 	c.Keypairs = (*KeypairsService)(&c.common)
