@@ -1,0 +1,165 @@
+{
+"backfilling": false,
+"card_backend": "StripeBackend",
+"currencies": [
+{
+"id": "CHF",
+"name": "chf"
+},
+{
+"id": "USD",
+"name": "usd"
+},
+{
+"id": "EUR",
+"name": "eur"
+},
+{
+"id": "GBP",
+"name": "gbp"
+},
+{
+"id": "PHP",
+"name": "php"
+},
+{
+"id": "AUD",
+"name": "aud"
+},
+{
+"id": "SAR",
+"name": "sar"
+},
+{
+"id": "JPY",
+"name": "jpy"
+}
+],
+"default_inactive_period": 45,
+"default_storage_type": "dssd",
+"drives": {
+"dssd": {
+"iops": {
+"base": 30000,
+"max": 60000,
+"min": 1
+},
+"max_size": 15492389427364,
+"min_size": 536870912,
+"size": {
+"max": 15492389427364,
+"min": 536870912
+}
+},
+"nvme": {
+"iops": {
+"base": 30000,
+"max": 60000,
+"min": 1
+},
+"max_size": 12074020121525,
+"min_size": 536870912,
+"size": {
+"max": 12074020121525,
+"min": 536870912
+}
+},
+"zadara": {
+"iops": {
+"base": 4000,
+"max": 8000,
+"min": 1
+},
+"max_size": 14180205493621,
+"min_size": 1073741824.0,
+"size": {
+"max": 14180205493621,
+"min": 1073741824.0
+}
+}
+},
+"hosts": {
+"amd": {
+"cpu": {
+"max": 96000,
+"min": 250
+},
+"cpu_per_smp": {
+"max": 2893,
+"min": 1000
+},
+"mem": {
+"max": 558345748480,
+"min": 268435456
+},
+"smp": {
+"max": 32,
+"min": 1
+}
+},
+"intel": {
+"cpu": {
+"max": 96000,
+"min": 250
+},
+"cpu_per_smp": {
+"max": 3000,
+"min": 1000
+},
+"mem": {
+"max": 558345748480,
+"min": 268435456
+},
+"smp": {
+"max": 32,
+"min": 1
+}
+}
+},
+"hypervisors": {
+"kvm": [
+"intel",
+"amd"
+]
+},
+"inactive_period_range": {
+"max": 250,
+"min": 0
+},
+"remote_snapshots": {
+"current": 0,
+"max": 600,
+"remote_locations": [
+"TBC"
+]
+},
+"servers": {
+"cpu": {
+"max": 96000,
+"min": 250
+},
+"cpu_per_smp": {
+"max": 3000,
+"min": 1000
+},
+"default_start_method": "regular",
+"mem": {
+"max": 558345748480,
+"min": 268435456
+},
+"smp": {
+"max": 32,
+"min": 1
+},
+"start_methods": [
+"eager",
+"lazy",
+"regular"
+]
+},
+"snapshots": {
+"current": 0,
+"max": 700,
+"max_per_drive": 90
+}
+}
