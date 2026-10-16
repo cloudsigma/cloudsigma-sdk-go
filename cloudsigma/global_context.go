@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 )
 
 // GlobalContextService provides read access to account-wide global context.
@@ -38,6 +39,35 @@ func (b *GlobalContext) UnmarshalJSON(data []byte) error {
 // Existing Client.Do decoding/error rules apply.
 func (s *GlobalContextService) GetRaw(ctx context.Context) (*GlobalContext, *Response, error) {
 	req, err := s.client.NewRequest(http.MethodGet, "global_context/", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	value := new(GlobalContext)
+	resp, err := s.client.Do(ctx, req, value)
+	if err != nil {
+		return nil, resp, err
+	}
+	return value, resp, nil
+}
+
+// Update posts an account-wide context object and returns the resulting context.
+// The request is a direct object, not a collection or a nested meta attribute.
+// It deliberately accepts string values only, without coercion. Nil is refused
+// as SDK policy; an empty nonnil map is sent as {}. No automatic GET/merge is
+// performed and no deletion, merge or atomicity guarantee is inferred from the
+// public example. Include all pairs you intend to retain. Callers must not mutate
+// values concurrently. Invalid UTF-8 is refused rather than silently repaired.
+// Docs: https://docs.cloudsigma.com/en/latest/server_context.html#global-context
+func (s *GlobalContextService) Update(ctx context.Context, values map[string]string) (*GlobalContext, *Response, error) {
+	if values == nil {
+		return nil, nil, ErrEmptyPayloadNotAllowed
+	}
+	for k, v := range values {
+		if !utf8.ValidString(k) || !utf8.ValidString(v) {
+			return nil, nil, fmt.Errorf("invalid global context UTF-8")
+		}
+	}
+	req, err := s.client.NewRequest(http.MethodPost, "global_context/", values)
 	if err != nil {
 		return nil, nil, err
 	}
