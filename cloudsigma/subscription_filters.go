@@ -21,30 +21,9 @@ type SubscriptionListOptions struct {
 // nonempty values fail before dispatch. Options are never modified or retained.
 // Existing List and response projection/mutation behavior remain unchanged.
 func (s *SubscriptionsService) ListWithOptions(ctx context.Context, opts *SubscriptionListOptions) ([]Subscription, *Response, error) {
-	query := url.Values{}
-	if opts != nil {
-		if opts.Status != "" {
-			switch opts.Status {
-			case "active", "inactive", "expired", "all", "notexpired":
-			default:
-				return nil, nil, fmt.Errorf("unsupported subscription status")
-			}
-			query.Set("status", opts.Status)
-		}
-		for _, resource := range opts.Resources {
-			switch resource {
-			case "dssd", "cpu", "mem", "tx", "ip", "vlan":
-			default:
-				return nil, nil, fmt.Errorf("unsupported subscription resource")
-			}
-		}
-		if len(opts.Resources) > 0 {
-			query.Set("resource", strings.Join(opts.Resources, ","))
-		}
-	}
-	path := "subscriptions/"
-	if encoded := query.Encode(); encoded != "" {
-		path += "?" + encoded
+	path, err := subscriptionListPath(opts)
+	if err != nil {
+		return nil, nil, err
 	}
 	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -59,4 +38,33 @@ func (s *SubscriptionsService) ListWithOptions(ctx context.Context, opts *Subscr
 		resp.Meta = m
 	}
 	return root.Subscriptions, resp, nil
+}
+
+func subscriptionListPath(opts *SubscriptionListOptions) (string, error) {
+	query := url.Values{}
+	if opts != nil {
+		if opts.Status != "" {
+			switch opts.Status {
+			case "active", "inactive", "expired", "all", "notexpired":
+			default:
+				return "", fmt.Errorf("unsupported subscription status")
+			}
+			query.Set("status", opts.Status)
+		}
+		for _, resource := range opts.Resources {
+			switch resource {
+			case "dssd", "cpu", "mem", "tx", "ip", "vlan":
+			default:
+				return "", fmt.Errorf("unsupported subscription resource")
+			}
+		}
+		if len(opts.Resources) > 0 {
+			query.Set("resource", strings.Join(opts.Resources, ","))
+		}
+	}
+	path := "subscriptions/"
+	if encoded := query.Encode(); encoded != "" {
+		path += "?" + encoded
+	}
+	return path, nil
 }
