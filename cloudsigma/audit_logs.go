@@ -61,3 +61,20 @@ func (s *AuditLogsService) ListRaw(ctx context.Context, opts *ListOptions) (*Aud
 	}
 	return value, resp, nil
 }
+
+// SchemaRaw reads GET /logs/schema/ as a complete raw object. It preserves
+// field descriptions, defaults, method lists and unknown members without
+// interpreting them as permission to write logs or as validation rules.
+// Existing Client.Do decoding/error rules apply.
+func (s *AuditLogsService) SchemaRaw(ctx context.Context) (*AuditLogs, *Response, error) {
+	req, err := s.client.NewRequest(http.MethodGet, "logs/schema/", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	value := new(AuditLogs)
+	resp, err := s.client.Do(ctx, req, value)
+	if err != nil {
+		return nil, resp, err
+	}
+	return value, resp, nil
+}
