@@ -40,37 +40,38 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
-	VMwareServers         *VMwareServersService
-	Ledger                *LedgerService
-	BurstUsage            *BurstUsageService
-	NotificationContacts  *NotificationContactsService
-	DailyBurstUsage       *DailyBurstUsageService
-	GroupedSubscriptions  *GroupedSubscriptionsService
-	CurrentUsage          *CurrentUsageService
-	Discount              *DiscountService
-	Pricing               *PricingService
-	Balance               *BalanceService
-	BackupSchedulers      *BackupSchedulersService
-	ACLs                  *ACLsService
-	Capabilities          *CapabilitiesService
-	CloudStatus           *CloudStatusService
-	Drives                *DrivesService
-	FirewallPolicies      *FirewallPoliciesService
-	VirtualRouterPolicies *VirtualRouterPoliciesService
-	VirtualRouters        *VirtualRoutersService
-	IPs                   *IPsService
-	Keypairs              *KeypairsService
-	Licenses              *LicensesService
-	LibraryDrives         *LibraryDrivesService
-	Locations             *LocationsService
-	Profile               *ProfileService
-	Pubkeys               *PubkeysService
-	RemoteSnapshots       *RemoteSnapshotsService
-	Servers               *ServersService
-	Snapshots             *SnapshotsService
-	Subscriptions         *SubscriptionsService
-	Tags                  *TagsService
-	VLANs                 *VLANsService
+	VMwareServers           *VMwareServersService
+	Ledger                  *LedgerService
+	BurstUsage              *BurstUsageService
+	NotificationPreferences *NotificationPreferencesService
+	NotificationContacts    *NotificationContactsService
+	DailyBurstUsage         *DailyBurstUsageService
+	GroupedSubscriptions    *GroupedSubscriptionsService
+	CurrentUsage            *CurrentUsageService
+	Discount                *DiscountService
+	Pricing                 *PricingService
+	Balance                 *BalanceService
+	BackupSchedulers        *BackupSchedulersService
+	ACLs                    *ACLsService
+	Capabilities            *CapabilitiesService
+	CloudStatus             *CloudStatusService
+	Drives                  *DrivesService
+	FirewallPolicies        *FirewallPoliciesService
+	VirtualRouterPolicies   *VirtualRouterPoliciesService
+	VirtualRouters          *VirtualRoutersService
+	IPs                     *IPsService
+	Keypairs                *KeypairsService
+	Licenses                *LicensesService
+	LibraryDrives           *LibraryDrivesService
+	Locations               *LocationsService
+	Profile                 *ProfileService
+	Pubkeys                 *PubkeysService
+	RemoteSnapshots         *RemoteSnapshotsService
+	Servers                 *ServersService
+	Snapshots               *SnapshotsService
+	Subscriptions           *SubscriptionsService
+	Tags                    *TagsService
+	VLANs                   *VLANsService
 }
 
 type service struct {
@@ -171,6 +172,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.VMwareServers = (*VMwareServersService)(&c.common)
 	c.Ledger = (*LedgerService)(&c.common)
 	c.BurstUsage = (*BurstUsageService)(&c.common)
+	c.NotificationPreferences = (*NotificationPreferencesService)(&c.common)
 	c.NotificationContacts = (*NotificationContactsService)(&c.common)
 	c.DailyBurstUsage = (*DailyBurstUsageService)(&c.common)
 	c.GroupedSubscriptions = (*GroupedSubscriptionsService)(&c.common)
