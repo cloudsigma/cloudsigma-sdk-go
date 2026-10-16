@@ -60,6 +60,7 @@ type Client struct {
 	Drives                  *DrivesService
 	FirewallPolicies        *FirewallPoliciesService
 	VirtualRouterPolicies   *VirtualRouterPoliciesService
+	VirtualRouterRoutes     *VirtualRouterRoutesService
 	VirtualRouters          *VirtualRoutersService
 	IPs                     *IPsService
 	Keypairs                *KeypairsService
@@ -191,6 +192,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.Drives = (*DrivesService)(&c.common)
 	c.FirewallPolicies = (*FirewallPoliciesService)(&c.common)
 	c.VirtualRouterPolicies = (*VirtualRouterPoliciesService)(&c.common)
+	c.VirtualRouterRoutes = (*VirtualRouterRoutesService)(&c.common)
 	c.VirtualRouters = (*VirtualRoutersService)(&c.common)
 	c.IPs = (*IPsService)(&c.common)
 	c.Keypairs = (*KeypairsService)(&c.common)
