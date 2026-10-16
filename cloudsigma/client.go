@@ -44,6 +44,7 @@ type Client struct {
 	Ledger                *LedgerService
 	DailyBurstUsage       *DailyBurstUsageService
 	GroupedSubscriptions  *GroupedSubscriptionsService
+	CurrentUsage          *CurrentUsageService
 	Discount              *DiscountService
 	Pricing               *PricingService
 	Balance               *BalanceService
@@ -169,6 +170,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.Ledger = (*LedgerService)(&c.common)
 	c.DailyBurstUsage = (*DailyBurstUsageService)(&c.common)
 	c.GroupedSubscriptions = (*GroupedSubscriptionsService)(&c.common)
+	c.CurrentUsage = (*CurrentUsageService)(&c.common)
 	c.Discount = (*DiscountService)(&c.common)
 	c.Pricing = (*PricingService)(&c.common)
 	c.Balance = (*BalanceService)(&c.common)
