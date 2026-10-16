@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-// ACLDefinition is an opt-in presence-preserving ACL create object. In particular,
+// ACLDefinition is an opt-in presence-preserving ACL object. In particular,
 // it can carry the documented grantees list missing from the legacy ACL model.
 // Raw values preserve null, empty collections and numeric tokens. Representation
 // does not establish field writability. Callers must not mutate maps or bytes
-// concurrently with CreateDefinition. Duplicate JSON keys follow encoding/json.
+// concurrently with CreateDefinition or UpdateDefinition. Duplicate JSON keys follow encoding/json.
 type ACLDefinition map[string]json.RawMessage
 
 // CreateDefinition posts the documented objects envelope to /acls/. It preserves
