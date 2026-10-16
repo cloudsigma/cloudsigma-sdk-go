@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// DriveUsersService reads RDS drive user-count records. It does not manage
+// DriveUsersService accesses RDS drive user-count records. It does not manage
 // accounts or permissions, or create RDS resources.
 type DriveUsersService service
 
