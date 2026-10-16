@@ -264,6 +264,7 @@ type Response struct {
 // Do sends an API request and returns the API response. The API response is JSON decoded and stored in
 // the value pointed to by v, or returned as an error if an API error has occurred.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+	retainErrorDetailsContext(ctx, nil, nil)
 	if err := c.validateDestination(req); err != nil {
 		return nil, err
 	}
@@ -284,7 +285,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	}()
 
 	response := newResponse(resp)
-	err = CheckResponse(response)
+	err = checkResponseContext(ctx, response)
 	if err != nil {
 		return response, err
 	}
@@ -323,6 +324,14 @@ func (r *Response) populateRequestID() {
 // CheckResponse checks the API response for errors, and returns them if present. A response is considered
 // an error if it has a status code outside the 200 range.
 func CheckResponse(resp *Response) error {
+	ctx := context.Background()
+	if resp.Request != nil {
+		ctx = resp.Request.Context()
+	}
+	return checkResponseContext(ctx, resp)
+}
+
+func checkResponseContext(ctx context.Context, resp *Response) error {
 	if code := resp.StatusCode; code >= 200 && code <= 299 {
 		return nil
 	}
@@ -330,6 +339,10 @@ func CheckResponse(resp *Response) error {
 	errorResponse := &ErrorResponse{Response: resp}
 
 	data, err := io.ReadAll(resp.Body)
+	if data == nil {
+		data = []byte{}
+	}
+	retainErrorDetailsContext(ctx, data, err)
 	if err == nil && len(data) > 0 {
 		err := json.Unmarshal(data, &errorResponse.Errors)
 		if err != nil {
