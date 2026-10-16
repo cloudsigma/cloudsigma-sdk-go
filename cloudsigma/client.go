@@ -42,6 +42,7 @@ type Client struct {
 
 	VMwareServers         *VMwareServersService
 	Ledger                *LedgerService
+	DailyBurstUsage       *DailyBurstUsageService
 	Pricing               *PricingService
 	Balance               *BalanceService
 	BackupSchedulers      *BackupSchedulersService
@@ -164,6 +165,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.common.client = c
 	c.VMwareServers = (*VMwareServersService)(&c.common)
 	c.Ledger = (*LedgerService)(&c.common)
+	c.DailyBurstUsage = (*DailyBurstUsageService)(&c.common)
 	c.Pricing = (*PricingService)(&c.common)
 	c.Balance = (*BalanceService)(&c.common)
 
