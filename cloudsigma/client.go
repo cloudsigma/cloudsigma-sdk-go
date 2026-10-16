@@ -43,6 +43,7 @@ type Client struct {
 	VMwareServers           *VMwareServersService
 	Ledger                  *LedgerService
 	BurstUsage              *BurstUsageService
+	GlobalContext           *GlobalContextService
 	AuditLogs               *AuditLogsService
 	NotificationPreferences *NotificationPreferencesService
 	NotificationContacts    *NotificationContactsService
@@ -173,6 +174,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.VMwareServers = (*VMwareServersService)(&c.common)
 	c.Ledger = (*LedgerService)(&c.common)
 	c.BurstUsage = (*BurstUsageService)(&c.common)
+	c.GlobalContext = (*GlobalContextService)(&c.common)
 	c.AuditLogs = (*AuditLogsService)(&c.common)
 	c.NotificationPreferences = (*NotificationPreferencesService)(&c.common)
 	c.NotificationContacts = (*NotificationContactsService)(&c.common)
