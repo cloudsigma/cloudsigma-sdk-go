@@ -8,7 +8,7 @@ import (
 )
 
 // DriveUsersService accesses RDS drive user-count records. It does not manage
-// accounts or permissions, or create RDS resources.
+// accounts or permissions, or provision drives or servers.
 type DriveUsersService service
 
 // GetRaw retrieves the RDS user-count record identified by the drive UUID.
