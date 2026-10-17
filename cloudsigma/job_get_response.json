@@ -1,0 +1,33 @@
+{
+"children": [
+{
+"children": [],
+"created": "2014-06-05T09:50:06.771415+00:00",
+"data": {
+"progress": 100
+},
+"last_modified": "2014-06-05T09:50:12.817209+00:00",
+"operation": "drive_clone",
+"resource_uri": "/api/2.0/jobs/5cf1a9e0-c019-4022-9ca5-08af64fa5105/",
+"resources": [
+"/api/2.0/drives/4f41610b-b73b-49f0-a7c8-2e5cd110eb31/",
+"/api/2.0/drives/eaa0b214-7f8c-446d-9d6b-1c106fcd9aba/"
+],
+"state": "success",
+"uuid": "5cf1a9e0-c019-4022-9ca5-08af64fa5105"
+}
+],
+"created": "2014-06-05T09:50:06.436976+00:00",
+"data": {
+"progress": 100
+},
+"last_modified": "2014-06-05T09:50:12.726357+00:00",
+"operation": "server_clone",
+"resource_uri": "/api/2.0/jobs/4e1944be-a078-4ead-9d19-5f8823a84d42/",
+"resources": [
+"/api/2.0/servers/3ee19ba9-fd1a-435b-9dbf-559d188fba90/",
+"/api/2.0/servers/810850e5-593b-4c21-af9e-a7cadac5b79c/"
+],
+"state": "success",
+"uuid": "4e1944be-a078-4ead-9d19-5f8823a84d42"
+}
