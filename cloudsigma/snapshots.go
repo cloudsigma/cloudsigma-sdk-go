@@ -131,23 +131,25 @@ func (s *SnapshotsService) Create(ctx context.Context, createRequest *SnapshotCr
 	return root.values(), resp, nil
 }
 
-// Update edits a snapshot identified by uuid.
+// Update edits a snapshot identified by uuid without modifying the supplied snapshot.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/snapshots.html#editing
 func (s *SnapshotsService) Update(ctx context.Context, uuid string, updateRequest *SnapshotUpdateRequest) (*Snapshot, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
 	}
-	if updateRequest == nil {
+	if updateRequest == nil || updateRequest.Snapshot == nil {
 		return nil, nil, ErrEmptyPayloadNotAllowed
 	}
 
 	path := fmt.Sprintf("%v/%v/", snapshotsBasePath, uuid)
 
-	// by update UUID must be empty
-	updateRequest.UUID = ""
+	// Clear the wire UUID on a copy. The snapshot marshaler also normalizes
+	// nil Tags, so it must receive this copy rather than caller-owned state.
+	payload := *updateRequest.Snapshot
+	payload.UUID = ""
 
-	req, err := s.client.NewRequest(http.MethodPut, path, updateRequest)
+	req, err := s.client.NewRequest(http.MethodPut, path, &SnapshotUpdateRequest{Snapshot: &payload})
 	if err != nil {
 		return nil, nil, err
 	}
