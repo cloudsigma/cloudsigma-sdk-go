@@ -164,6 +164,10 @@ func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, cloneRequ
 		return nil, resp, err
 	}
 
+	if len(root.LibraryDrives) == 0 {
+		return nil, resp, fmt.Errorf("clone response contains no library drives")
+	}
+
 	return (*LibraryDrive)(&root.LibraryDrives[0]), resp, nil
 }
 

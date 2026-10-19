@@ -109,7 +109,10 @@ func TestSnapshots_Update(t *testing.T) {
 	mux.HandleFunc("/snapshots/long-uuid/", func(w http.ResponseWriter, r *http.Request) {
 		v := new(SnapshotUpdateRequest)
 		_ = json.NewDecoder(r.Body).Decode(v)
-		assert.Equal(t, input, v)
+		// Wire normalization must not depend on mutating the caller's nil Tags.
+		assert.Equal(t, &SnapshotUpdateRequest{Snapshot: &Snapshot{
+			Name: "test snapshot v2", Tags: []Tag{},
+		}}, v)
 		assert.Equal(t, http.MethodPut, r.Method)
 		_, _ = fmt.Fprint(w, `{"name":"test snapshot v2","uuid":"long-uuid"}`)
 	})
