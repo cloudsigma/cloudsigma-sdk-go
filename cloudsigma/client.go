@@ -40,6 +40,7 @@ type Client struct {
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
+	BServers                *BServersService
 	Jobs                    *JobsService
 	VMwareServers           *VMwareServersService
 	Ledger                  *LedgerService
@@ -175,6 +176,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	}
 
 	c.common.client = c
+	c.BServers = (*BServersService)(&c.common)
 	c.VMwareServers = (*VMwareServersService)(&c.common)
 	c.Ledger = (*LedgerService)(&c.common)
 	c.BurstUsage = (*BurstUsageService)(&c.common)
