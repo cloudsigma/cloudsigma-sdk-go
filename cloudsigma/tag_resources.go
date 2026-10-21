@@ -17,6 +17,16 @@ import (
 // conservative SDK route safety, not a public UUID grammar.
 // Docs: https://docs.cloudsigma.com/en/latest/tags.html
 func (s *TagsService) ListResourcesRaw(ctx context.Context, id, resourceType string) (map[string]json.RawMessage, *Response, error) {
+	return s.ListResourcesPageRaw(ctx, id, resourceType, nil)
+}
+
+// ListResourcesPageRaw reads one tagged-resource collection page with its full raw
+// envelope. Nil options omit pagination; a nonnil zero value sends limit=0.
+// Negative pagination is rejected locally. Validation, response ownership and
+// error behavior match ListResourcesRaw. No links are followed, Response.Meta is
+// not populated, and resource fields are not schema-validated or redacted.
+// Docs: https://docs.cloudsigma.com/en/latest/tags.html
+func (s *TagsService) ListResourcesPageRaw(ctx context.Context, id, resourceType string, opts *ListOptions) (map[string]json.RawMessage, *Response, error) {
 	if err := validateServerDefinitionID(id); err != nil {
 		return nil, nil, err
 	}
@@ -25,7 +35,14 @@ func (s *TagsService) ListResourcesRaw(ctx context.Context, id, resourceType str
 	default:
 		return nil, nil, fmt.Errorf("tag resource type must be servers, drives, ips or vlans")
 	}
-	req, err := s.client.NewRequest(http.MethodGet, "tags/"+id+"/"+resourceType+"/", nil)
+	if opts != nil && (opts.Limit < 0 || opts.Offset < 0) {
+		return nil, nil, fmt.Errorf("negative tagged resources pagination")
+	}
+	path, err := addOptions("tags/"+id+"/"+resourceType+"/", opts)
+	if err != nil {
+		return nil, nil, err
+	}
+	req, err := s.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
