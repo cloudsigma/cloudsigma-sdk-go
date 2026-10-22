@@ -166,6 +166,8 @@ func (s *ServersService) Get(ctx context.Context, uuid string) (*Server, *Respon
 
 // Create makes a new virtual server with given payload.
 //
+// Redirects are refused; the initial outcome is unknown. Do not blindly retry.
+//
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/servers.html#creating
 func (s *ServersService) Create(ctx context.Context, createRequest *ServerCreateRequest) ([]Server, *Response, error) {
 	if createRequest == nil {
@@ -180,7 +182,7 @@ func (s *ServersService) Create(ctx context.Context, createRequest *ServerCreate
 	}
 
 	root := new(serversRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrServerCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
