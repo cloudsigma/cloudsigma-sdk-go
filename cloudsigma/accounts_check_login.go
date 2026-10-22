@@ -21,15 +21,5 @@ func (c *Client) CheckLogin(ctx context.Context) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Refuse redirects only for this action, without mutating caller policy.
-	httpClient := c.guardedHTTPClient()
-	httpClient.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
-		return ErrCheckLoginRedirect
-	}
-	resp, err := c.do(ctx, req, nil, httpClient)
-	if errors.Is(err, ErrCheckLoginRedirect) {
-		// Do not expose net/http's URL-bearing redirect error.
-		return nil, ErrCheckLoginRedirect
-	}
-	return resp, err
+	return c.doResourceAction(ctx, req, nil, ErrCheckLoginRedirect)
 }
