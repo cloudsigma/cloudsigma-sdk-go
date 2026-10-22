@@ -14,6 +14,8 @@ import (
 // identifiers are refused as SDK policy, not UUID grammar. Raw fields are
 // preserved without schema validation or redaction. Shared Client.Do success,
 // decoding and error rules apply.
+// Redirects are refused with ErrSnapshotCloneRedirect; the initial POST outcome
+// is unknown and must not be blindly retried.
 // Docs: https://docs.cloudsigma.com/en/latest/snapshots.html#cloning
 func (s *SnapshotsService) CloneRaw(ctx context.Context, id string) (map[string]json.RawMessage, *Response, error) {
 	if err := validateServerDefinitionID(id); err != nil {
@@ -24,7 +26,7 @@ func (s *SnapshotsService) CloneRaw(ctx context.Context, id string) (map[string]
 		return nil, nil, err
 	}
 	var value map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &value)
+	resp, err := s.client.doResourceAction(ctx, req, &value, ErrSnapshotCloneRedirect)
 	if err != nil {
 		return nil, resp, err
 	}

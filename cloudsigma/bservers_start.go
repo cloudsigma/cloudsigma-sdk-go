@@ -13,6 +13,8 @@ import (
 // performed. Unsafe identifiers are refused as SDK policy, not UUID grammar.
 // Raw fields are preserved without schema validation or redaction. Shared
 // Client.Do success, decoding and error rules apply.
+// Redirects are refused with ErrBServerStartRedirect; the initial POST outcome
+// is unknown and must not be blindly retried.
 // Docs: https://docs.cloudsigma.com/en/latest/backfilling.html#start
 // Request/response: https://docs.cloudsigma.com/en/latest/servers.html#start
 func (s *BServersService) Start(ctx context.Context, id string) (map[string]json.RawMessage, *Response, error) {
@@ -24,7 +26,7 @@ func (s *BServersService) Start(ctx context.Context, id string) (map[string]json
 		return nil, nil, err
 	}
 	var value map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &value)
+	resp, err := s.client.doResourceAction(ctx, req, &value, ErrBServerStartRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
