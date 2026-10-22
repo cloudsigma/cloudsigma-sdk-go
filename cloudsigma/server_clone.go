@@ -15,6 +15,7 @@ type ServerCloneRequest map[string]json.RawMessage
 // Clone requests the documented server clone and decodes its singleton server
 // definition using the existing private server decoder. Nil options omit the
 // optional body; an empty map sends {}. No required fields are invented.
+// Redirects are refused; the initial outcome is unknown. Do not blindly retry.
 // HTTP 202 is acceptance, not completion. No polling or live followups occur.
 // The existing Server model ignores other unmodeled fields; this is
 // not a raw full-response interface. Caller options must not mutate concurrently.
@@ -53,7 +54,7 @@ func (s *ServersService) cloneAvoid(ctx context.Context, id string, options Serv
 		return nil, nil, err
 	}
 	result := new(serverResponse)
-	resp, err := s.client.Do(ctx, req, result)
+	resp, err := s.client.doResourceAction(ctx, req, result, ErrServerCloneRedirect)
 	if err != nil {
 		return nil, resp, err
 	}

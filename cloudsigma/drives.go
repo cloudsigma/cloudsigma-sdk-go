@@ -234,7 +234,8 @@ func (s *DrivesService) Resize(ctx context.Context, uuid string, updateRequest *
 }
 
 // Clone duplicates a drive. DriveCloneRequest is optional. Size of the
-// cloned drive can only be bigger or the same.
+// cloned drive can only be bigger or the same. Redirects are refused; the initial
+// outcome is unknown and callers must not blindly retry.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#cloning
 func (s *DrivesService) Clone(ctx context.Context, uuid string, cloneRequest *DriveCloneRequest) (*Drive, *Response, error) {
@@ -256,7 +257,7 @@ func (s *DrivesService) Clone(ctx context.Context, uuid string, cloneRequest *Dr
 	}
 
 	root := new(drivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrDriveCloneRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
