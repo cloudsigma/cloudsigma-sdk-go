@@ -57,6 +57,8 @@ func (s *GlobalContextService) GetRaw(ctx context.Context) (*GlobalContext, *Res
 // performed and no deletion, merge or atomicity guarantee is inferred from the
 // public example. Include all pairs you intend to retain. Callers must not mutate
 // values concurrently. Invalid UTF-8 is refused rather than silently repaired.
+// Redirects are refused with ErrGlobalContextUpdateRedirect. The initial POST
+// outcome is unknown; callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/server_context.html#global-context
 func (s *GlobalContextService) Update(ctx context.Context, values map[string]string) (*GlobalContext, *Response, error) {
 	if values == nil {
@@ -72,7 +74,7 @@ func (s *GlobalContextService) Update(ctx context.Context, values map[string]str
 		return nil, nil, err
 	}
 	value := new(GlobalContext)
-	resp, err := s.client.Do(ctx, req, value)
+	resp, err := s.client.doResourceAction(ctx, req, value, ErrGlobalContextUpdateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
