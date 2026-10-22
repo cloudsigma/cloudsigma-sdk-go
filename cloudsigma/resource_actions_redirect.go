@@ -22,7 +22,7 @@ var ErrBServerStartRedirect = errors.New("backfilling start redirect refused; ou
 // initial POST outcome is unknown; callers must not blindly retry.
 var ErrBServerStopRedirect = errors.New("backfilling stop redirect refused; outcome unknown")
 
-// doResourceAction refuses redirects only for the seven explicitly opted-in
+// doResourceAction refuses redirects only for the explicitly opted-in
 // resource and account/auth actions. Keep the effective transport, jar and timeout, without
 // changing caller configuration or invoking its redirect callback.
 func (c *Client) doResourceAction(ctx context.Context, req *http.Request, value interface{}, refusal error) (*Response, error) {
