@@ -294,12 +294,17 @@ type Response struct {
 // Do sends an API request and returns the API response. The API response is JSON decoded and stored in
 // the value pointed to by v, or returned as an error if an API error has occurred.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+	return c.do(ctx, req, v, c.guardedHTTPClient())
+}
+
+// do shares response ownership and decoding with operation-specific HTTP policy.
+func (c *Client) do(ctx context.Context, req *http.Request, v interface{}, httpClient *http.Client) (*Response, error) {
 	retainErrorDetailsContext(ctx, nil, nil)
 	if err := c.validateDestination(req); err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	resp, err := c.guardedHTTPClient().Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		// if we got an error, and the context has been canceled, the context's error is more useful.
 		select {
