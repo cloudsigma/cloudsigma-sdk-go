@@ -208,7 +208,8 @@ func (s *DrivesService) Delete(ctx context.Context, uuid string) (*Response, err
 
 // Resize updates a drive definition. Note that the resize action is a full
 // definition update (it can update even name and metadata), so a full
-// definition should be provided to this call.
+// definition should be provided to this call. Redirects are refused; the initial
+// outcome is unknown and callers must not blindly retry.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#resizing-update-or-fail
 func (s *DrivesService) Resize(ctx context.Context, uuid string, updateRequest *DriveUpdateRequest) ([]Drive, *Response, error) {
@@ -227,7 +228,7 @@ func (s *DrivesService) Resize(ctx context.Context, uuid string, updateRequest *
 	}
 
 	root := new(drivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrDriveResizeRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
