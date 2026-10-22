@@ -132,6 +132,8 @@ func (s *DrivesService) Get(ctx context.Context, uuid string) (*Drive, *Response
 
 // Create makes a new drive (or drives) with given payload.
 //
+// Redirects are refused; the initial outcome is unknown. Do not blindly retry.
+//
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#creating
 func (s *DrivesService) Create(ctx context.Context, createRequest *DriveCreateRequest) ([]Drive, *Response, error) {
 	if createRequest == nil {
@@ -146,7 +148,7 @@ func (s *DrivesService) Create(ctx context.Context, createRequest *DriveCreateRe
 	}
 
 	root := new(drivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrDriveCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
