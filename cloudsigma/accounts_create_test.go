@@ -96,6 +96,13 @@ func TestAccountCreateResponseErrors(t *testing.T) {
 	for _, code := range []int{302, 400, 401, 403, 404, 409, 429, 500} {
 		w := &accountCreateWire{t: t, want: `{"email":""}`, body: `[{"error_type":"forbidden","error_message":"synthetic refusal","error_point":null}]`, code: code}
 		a, r, e := accountCreateClient(w).CreateAccountRaw(context.Background(), sdk.AccountCreateRequest{})
+		// Redirect refusal precedes Location parsing, even when Location is absent.
+		if code == 302 {
+			if a != nil || r != nil || !errors.Is(e, sdk.ErrAccountCreateRedirect) || w.calls != 1 || w.closed != 1 {
+				t.Fatalf("redirect %v", e)
+			}
+			continue
+		}
 		var api *sdk.ErrorResponse
 		if a != nil || r == nil || r.StatusCode != code || !errors.As(e, &api) || api.Response != r || len(api.Errors) != 1 || api.Errors[0].Message != "synthetic refusal" || w.calls != 1 || w.closed != 1 {
 			t.Fatalf("HTTP %d %v", code, e)

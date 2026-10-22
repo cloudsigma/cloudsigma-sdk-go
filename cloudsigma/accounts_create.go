@@ -53,16 +53,7 @@ func (c *Client) CreateAccountRaw(ctx context.Context, account AccountCreateRequ
 		return nil, nil, err
 	}
 	value := new(AccountCreateResult)
-	// Copy only operation-local policy. Transport, timeout, jar and credentials
-	// remain caller-owned; other operations retain their existing redirect policy.
-	httpClient := c.guardedHTTPClient()
-	httpClient.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
-		return ErrAccountCreateRedirect
-	}
-	resp, err := c.do(ctx, req, value, httpClient)
-	if errors.Is(err, ErrAccountCreateRedirect) {
-		return nil, nil, ErrAccountCreateRedirect
-	}
+	resp, err := c.doResourceAction(ctx, req, value, ErrAccountCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
