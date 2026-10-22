@@ -19,6 +19,8 @@ type BServerMinimalCreateRequest struct {
 // complete raw response envelope. Nil input is encoded as an empty objects array;
 // this does not imply the server accepts empty batches. HTTP 201 acknowledges
 // creation, not running or readiness. No retries or follow-up requests are made.
+// Redirects are refused with ErrBServerCreateRedirect; the initial POST outcome
+// is unknown and must not be blindly retried.
 // Docs: https://docs.cloudsigma.com/en/latest/backfilling.html#creating
 // Minimal fields: https://docs.cloudsigma.com/en/latest/servers.html#creating
 func (s *BServersService) CreateMinimalRaw(ctx context.Context, servers []BServerMinimalCreateRequest) (*BServers, *Response, error) {
@@ -33,7 +35,7 @@ func (s *BServersService) CreateMinimalRaw(ctx context.Context, servers []BServe
 		return nil, nil, err
 	}
 	value := new(BServers)
-	resp, err := s.client.Do(ctx, req, value)
+	resp, err := s.client.doResourceAction(ctx, req, value, ErrBServerCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
