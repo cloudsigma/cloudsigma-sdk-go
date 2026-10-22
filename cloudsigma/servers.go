@@ -287,13 +287,14 @@ func (s *ServersService) doActionAvoid(ctx context.Context, uuid, action string,
 
 	// The public Start/Stop/Shutdown examples specify an empty JSON object.
 	// A successful acknowledgment does not establish lifecycle completion.
+	// Redirects are refused; the initial outcome is unknown. Do not blindly retry.
 	req, err := s.client.NewRequest(http.MethodPost, path, struct{}{})
 	if err != nil {
 		return nil, nil, err
 	}
 
 	serverAction := new(ServerAction)
-	resp, err := s.client.Do(ctx, req, serverAction)
+	resp, err := s.client.doResourceAction(ctx, req, serverAction, ErrServerPowerRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
