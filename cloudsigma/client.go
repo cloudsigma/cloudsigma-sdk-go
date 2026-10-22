@@ -50,6 +50,7 @@ type Client struct {
 	AuditLogs               *AuditLogsService
 	NotificationPreferences *NotificationPreferencesService
 	NotificationContacts    *NotificationContactsService
+	Tunnels                 *TunnelsService
 	DailyBurstUsage         *DailyBurstUsageService
 	GroupedSubscriptions    *GroupedSubscriptionsService
 	CurrentUsage            *CurrentUsageService
@@ -186,6 +187,7 @@ func NewClient(cred CredentialsProvider, opts ...ClientOption) *Client {
 	c.AuditLogs = (*AuditLogsService)(&c.common)
 	c.NotificationPreferences = (*NotificationPreferencesService)(&c.common)
 	c.NotificationContacts = (*NotificationContactsService)(&c.common)
+	c.Tunnels = (*TunnelsService)(&c.common)
 	c.DailyBurstUsage = (*DailyBurstUsageService)(&c.common)
 	c.GroupedSubscriptions = (*GroupedSubscriptionsService)(&c.common)
 	c.CurrentUsage = (*CurrentUsageService)(&c.common)
