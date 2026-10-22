@@ -19,6 +19,8 @@ type DriveSchedulerBinding struct {
 // scheduler creation, or polling. HTTP 202 means accepted, not complete.
 // Both identifiers must be nonempty ASCII letters/digits/hyphen/underscore:
 // conservative SDK input safety, not a claim about every server-valid ID.
+// Redirects are refused with ErrDriveSetSchedulerRedirect. The initial POST
+// outcome is unknown; callers must not blindly retry.
 // Public docs: https://docs.cloudsigma.com/en/latest/backup_schedulers.html
 func (s *DrivesService) SetScheduler(ctx context.Context, driveID, policyID string) (*DriveSchedulerBinding, *Response, error) {
 	for _, id := range []string{driveID, policyID} {
@@ -39,7 +41,7 @@ func (s *DrivesService) SetScheduler(ctx context.Context, driveID, policyID stri
 		return nil, nil, err
 	}
 	var raw json.RawMessage
-	resp, err := s.client.Do(ctx, req, &raw)
+	resp, err := s.client.doResourceAction(ctx, req, &raw, ErrDriveSetSchedulerRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
