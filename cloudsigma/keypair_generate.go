@@ -15,6 +15,8 @@ type KeypairGenerateRequest struct {
 }
 
 // Generate requests one new keypair using the explicitly selected algorithm.
+// Redirects are refused with ErrKeypairGenerateRedirect. The initial POST
+// outcome is unknown; callers must not blindly retry.
 // The response may contain PRIVATE KEY MATERIAL; callers must handle it securely.
 // This uses the ordinary keypairs authentication path (including any API OTP
 // requirements); it does not bypass two-factor authentication. A response is not
@@ -37,7 +39,7 @@ func (s *KeypairsService) Generate(ctx context.Context, input *KeypairGenerateRe
 		return nil, nil, err
 	}
 	root := new(KeypairCreateRequest)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrKeypairGenerateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
