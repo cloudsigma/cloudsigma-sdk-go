@@ -19,6 +19,8 @@ type NotificationContactCreateRequest struct {
 // envelope. Nil input is sent as an empty objects array; no local batch-size or
 // required-field rules are invented. HTTP 201 acknowledges creation, not message
 // delivery or account confirmation. No retries or follow-up requests are made.
+// Redirects are refused with ErrNotificationContactsCreateRedirect. The initial
+// POST outcome is unknown; callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/notification_contacts.html#creating
 func (s *NotificationContactsService) CreateRaw(ctx context.Context, contacts []NotificationContactCreateRequest) (*NotificationContacts, *Response, error) {
 	if contacts == nil {
@@ -32,7 +34,7 @@ func (s *NotificationContactsService) CreateRaw(ctx context.Context, contacts []
 		return nil, nil, err
 	}
 	value := new(NotificationContacts)
-	resp, err := s.client.Do(ctx, req, value)
+	resp, err := s.client.doResourceAction(ctx, req, value, ErrNotificationContactsCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
