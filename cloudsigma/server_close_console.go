@@ -13,6 +13,8 @@ import (
 // No connections, passwords, polling, retries or followups are performed.
 // IDs use nonempty ASCII letters/digits/hyphen/underscore as SDK route policy,
 // not public UUID grammar. Existing methods are unaffected.
+// Redirects are refused with ErrServerConsoleCloseRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/servers.html#close-serial-console-connection
 func (s *ServersService) CloseConsole(ctx context.Context, id string) (*ServerAction, *Response, error) {
 	if id == "" {
@@ -28,7 +30,7 @@ func (s *ServersService) CloseConsole(ctx context.Context, id string) (*ServerAc
 		return nil, nil, err
 	}
 	result := new(ServerAction)
-	resp, err := s.client.Do(ctx, req, result)
+	resp, err := s.client.doResourceAction(ctx, req, result, ErrServerConsoleCloseRedirect)
 	if err != nil {
 		return nil, resp, err
 	}

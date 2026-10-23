@@ -11,6 +11,8 @@ import (
 // No connection, password, polling, retries or followups are performed.
 // IDs use conservative ASCII letters/digits/hyphen/underscore SDK policy,
 // not public UUID grammar. No VMware action applicability is inferred.
+// Redirects are refused with ErrServerConsoleCloseRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/servers_kvm.html
 func (s *ServersService) CloseVNC(ctx context.Context, id string) (*ServerAction, *Response, error) {
 	if id == "" {
@@ -26,7 +28,7 @@ func (s *ServersService) CloseVNC(ctx context.Context, id string) (*ServerAction
 		return nil, nil, err
 	}
 	result := new(ServerAction)
-	resp, err := s.client.Do(ctx, req, result)
+	resp, err := s.client.doResourceAction(ctx, req, result, ErrServerConsoleCloseRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
