@@ -44,6 +44,8 @@ func copyServerDefinition(v ServerDefinition) (ServerDefinition, error) {
 	return o, nil
 }
 
+// Redirects are refused with ErrServerCreateDefinitionRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // CreateDefinition sends the documented objects envelope with presence-preserving
 // raw server objects and decodes the collection objects response into []Server.
 // Nil batches/objects are rejected; nonnil empty batches/objects are serialized.
@@ -67,7 +69,7 @@ func (s *ServersService) CreateDefinition(ctx context.Context, objects []ServerD
 		return nil, nil, e
 	}
 	root := new(serversRoot)
-	resp, e := s.client.Do(ctx, req, root)
+	resp, e := s.client.doResourceAction(ctx, req, root, ErrServerCreateDefinitionRedirect)
 	if e != nil {
 		return nil, resp, e
 	}
