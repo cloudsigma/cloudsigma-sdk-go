@@ -93,6 +93,8 @@ func (s *KeypairsService) Get(ctx context.Context, uuid string) (*Keypair, *Resp
 }
 
 // Create makes a new keypair (or keypairs) with given payload.
+// Redirects are refused with ErrKeypairCreateRedirect; the initial POST outcome
+// is unknown. Callers must not blindly retry.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/keypairs.html#creating-a-keypair
 func (s *KeypairsService) Create(ctx context.Context, createRequest *KeypairCreateRequest) ([]Keypair, *Response, error) {
@@ -108,7 +110,7 @@ func (s *KeypairsService) Create(ctx context.Context, createRequest *KeypairCrea
 	}
 
 	root := new(KeypairCreateRequest)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrKeypairCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
