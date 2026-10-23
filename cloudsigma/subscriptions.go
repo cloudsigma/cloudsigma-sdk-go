@@ -66,6 +66,8 @@ func (s *SubscriptionsService) List(ctx context.Context) ([]Subscription, *Respo
 }
 
 // Create makes a new subscription with given payload.
+// Redirects are refused with ErrSubscriptionCreateRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/subscriptions.html#creating
 func (s *SubscriptionsService) Create(ctx context.Context, createRequest *SubscriptionCreateRequest) ([]Subscription, *Response, error) {
@@ -81,7 +83,7 @@ func (s *SubscriptionsService) Create(ctx context.Context, createRequest *Subscr
 	}
 
 	root := new(SubscriptionCreateRequest)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrSubscriptionCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
