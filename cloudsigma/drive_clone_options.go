@@ -23,6 +23,8 @@ type driveCloneBody struct {
 }
 
 // CloneWithOptions duplicates a drive with presence-aware optional fields.
+// Redirects are refused with ErrDriveCloneOptionsRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Nil options omit the body; empty options send {}. A 202 response acknowledges
 // acceptance only: callers must observe the drive separately for completion.
 // Size of the cloned drive can only be bigger or the same.
@@ -52,7 +54,7 @@ func (s *DrivesService) CloneWithOptions(ctx context.Context, uuid string, optio
 	}
 
 	root := new(drivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrDriveCloneOptionsRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
