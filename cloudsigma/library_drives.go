@@ -140,6 +140,8 @@ func (s *LibraryDrivesService) Get(ctx context.Context, uuid string) (*LibraryDr
 // cloned drive can only be bigger or the same.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/libdrives.html#cloning-library-drive
+// Redirects are refused with ErrLibraryDriveCloneRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, cloneRequest *LibraryDriveCloneRequest) (*LibraryDrive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -159,7 +161,7 @@ func (s *LibraryDrivesService) Clone(ctx context.Context, uuid string, cloneRequ
 	}
 
 	root := new(libraryDrivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrLibraryDriveCloneRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
