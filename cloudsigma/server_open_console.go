@@ -20,6 +20,8 @@ type ServerConsoleAction struct {
 // No polling, connection, retries or lifecycle followups are performed.
 // Identifiers use a conservative nonempty ASCII alnum/hyphen/underscore SDK
 // policy, not a guarantee of server-valid UUID syntax.
+// Redirects are refused with ErrServerConsoleOpenRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/servers.html#open-serial-console-connection
 func (s *ServersService) OpenConsole(ctx context.Context, id string) (*ServerConsoleAction, *Response, error) {
 	if id == "" {
@@ -35,7 +37,7 @@ func (s *ServersService) OpenConsole(ctx context.Context, id string) (*ServerCon
 		return nil, nil, err
 	}
 	result := new(ServerConsoleAction)
-	resp, err := s.client.Do(ctx, req, result)
+	resp, err := s.client.doResourceAction(ctx, req, result, ErrServerConsoleOpenRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
