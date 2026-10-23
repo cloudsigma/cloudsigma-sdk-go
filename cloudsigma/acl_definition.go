@@ -22,6 +22,8 @@ type ACLDefinition map[string]json.RawMessage
 // not guaranteed valid server requests. Unknown fields are forwarded, not endorsed.
 // Metadata follows the common replacement contract, not a merge operation.
 // Null/nonobject responses are refused. Each returned raw value is caller-owned.
+// Redirects are refused with ErrACLCreateDefinitionRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/acls.html#creating
 func (s *ACLsService) CreateDefinition(ctx context.Context, objects []ACLDefinition) (map[string]json.RawMessage, *Response, error) {
 	if objects == nil {
@@ -51,7 +53,7 @@ func (s *ACLsService) CreateDefinition(ctx context.Context, objects []ACLDefinit
 		return nil, nil, err
 	}
 	var out map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &out)
+	resp, err := s.client.doResourceAction(ctx, req, &out, ErrACLCreateDefinitionRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
