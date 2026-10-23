@@ -97,6 +97,8 @@ func (s *ACLsService) Get(ctx context.Context, uuid string) (*ACL, *Response, er
 }
 
 // Create makes a new ACL (or ACLs) with given payload.
+// Redirects are refused with ErrACLCreateRedirect; the initial POST outcome
+// is unknown. Callers must not blindly retry.
 //
 // CloudSigma API docs: https://cloudsigma-docs.readthedocs.io/en/latest/acls.html#creating
 func (s *ACLsService) Create(ctx context.Context, createRequest *ACLCreateRequest) ([]ACL, *Response, error) {
@@ -112,7 +114,7 @@ func (s *ACLsService) Create(ctx context.Context, createRequest *ACLCreateReques
 	}
 
 	root := new(ACLCreateRequest)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrACLCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
