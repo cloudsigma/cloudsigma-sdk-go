@@ -15,6 +15,8 @@ import (
 // The complete response object is returned without schema validation; raw field
 // preservation and HTTP acknowledgment do not establish remote completion.
 // Null/nonobject responses are refused; shared HTTP success handling is unchanged.
+// Redirects are refused with ErrDriveUsersCreateRedirect. The initial POST
+// outcome is unknown; callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/drives.html#creating-defining-rds-drive
 func (s *DriveUsersService) Create(ctx context.Context, id string, amount int) (map[string]json.RawMessage, *Response, error) {
 	if err := validateServerDefinitionID(id); err != nil {
@@ -29,7 +31,7 @@ func (s *DriveUsersService) Create(ctx context.Context, id string, amount int) (
 		return nil, nil, err
 	}
 	var out map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &out)
+	resp, err := s.client.doResourceAction(ctx, req, &out, ErrDriveUsersCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
