@@ -15,6 +15,8 @@ import (
 // not a UUID requirement (the public example uses a numeric identifier).
 // One POST is made, without retries, polling or follow-up requests. Shared
 // Client.Do success, decoding and error rules apply.
+// Redirects are refused with ErrSubscriptionQuoteRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/subscriptions.html#calculator
 func (s *SubscriptionsService) CalculateExtension(ctx context.Context, id string) (map[string]json.RawMessage, *Response, error) {
 	if err := validateServerDefinitionID(id); err != nil {
@@ -25,7 +27,7 @@ func (s *SubscriptionsService) CalculateExtension(ctx context.Context, id string
 		return nil, nil, err
 	}
 	var value map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &value)
+	resp, err := s.client.doResourceAction(ctx, req, &value, ErrSubscriptionQuoteRedirect)
 	if err != nil {
 		return nil, resp, err
 	}

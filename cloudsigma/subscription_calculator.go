@@ -16,6 +16,8 @@ import (
 // per-object quotes without numeric conversion or local price calculation.
 // This performs one POST, with no retry or polling. Shared HTTP success/error
 // rules apply; raw preservation is not full billing-schema qualification.
+// Redirects are refused with ErrSubscriptionQuoteRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 // Docs: https://docs.cloudsigma.com/en/latest/subscriptions.html#calculator
 func (s *SubscriptionsService) Calculate(ctx context.Context, definitions []json.RawMessage) (map[string]json.RawMessage, *Response, error) {
 	if len(definitions) == 0 {
@@ -37,7 +39,7 @@ func (s *SubscriptionsService) Calculate(ctx context.Context, definitions []json
 		return nil, nil, err
 	}
 	var out map[string]json.RawMessage
-	resp, err := s.client.Do(ctx, req, &out)
+	resp, err := s.client.doResourceAction(ctx, req, &out, ErrSubscriptionQuoteRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
