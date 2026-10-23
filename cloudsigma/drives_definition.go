@@ -24,6 +24,8 @@ type DriveDefinition map[string]json.RawMessage
 // Callers must not concurrently modify definition or its raw byte slices.
 //
 // https://cloudsigma-docs.readthedocs.io/en/latest/drives.html#resizing-update-or-fail
+// Redirects are refused with ErrDriveResizeDefinitionRedirect; the initial POST
+// outcome is unknown. Callers must not blindly retry.
 func (s *DrivesService) ResizeDefinition(ctx context.Context, uuid string, definition DriveDefinition) ([]Drive, *Response, error) {
 	if uuid == "" {
 		return nil, nil, ErrEmptyArgument
@@ -54,7 +56,7 @@ func (s *DrivesService) ResizeDefinition(ctx context.Context, uuid string, defin
 		return nil, nil, err
 	}
 	root := new(drivesRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrDriveResizeDefinitionRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
