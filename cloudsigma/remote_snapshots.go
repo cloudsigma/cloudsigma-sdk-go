@@ -2,6 +2,8 @@ package cloudsigma
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -32,6 +34,60 @@ type RemoteSnapshotDriveMetadata struct {
 type RemoteSnapshotCreateRequest struct {
 	RemoteSnapshots []RemoteSnapshot `json:"objects"`
 }
+
+// NewRemoteSnapshotCreateRequest constructs a dedicated typed writable envelope.
+func NewRemoteSnapshotCreateRequest(objects ...RemoteSnapshotCreate) (*RemoteSnapshotCreateDefinitionsRequest, error) {
+	copied := make([]RemoteSnapshotCreate, len(objects))
+	for i, object := range objects {
+		if object.Drive == nil || object.Drive.UUID == "" {
+			return nil, errors.New("remote snapshot drive uuid is required")
+		}
+		copied[i] = object
+		if object.Drive != nil {
+			drive := *object.Drive
+			copied[i].Drive = &drive
+		}
+	}
+	return &RemoteSnapshotCreateDefinitionsRequest{Objects: copied}, nil
+}
+
+// RemoteSnapshotCreateDefinitionsRequest is the writable create contract.
+type RemoteSnapshotCreateDefinitionsRequest struct {
+	Objects []RemoteSnapshotCreate `json:"objects"`
+}
+
+// RemoteSnapshotCreate contains only fields accepted by the create endpoint.
+type RemoteSnapshotCreate struct {
+	Drive    *RemoteSnapshotDriveReference `json:"drive,omitempty"`
+	Location string                        `json:"location,omitempty"`
+	Name     string                        `json:"name,omitempty"`
+}
+
+// RemoteSnapshotDriveReference identifies a drive without echoing response fields.
+type RemoteSnapshotDriveReference struct {
+	UUID        string `json:"uuid,omitempty"`
+	ResourceURI string `json:"resource_uri,omitempty"`
+}
+
+// UnmarshalJSON accepts a UUID string or a minimal reference object.
+func (r *RemoteSnapshotDriveReference) UnmarshalJSON(data []byte) error {
+	var uuid string
+	if err := json.Unmarshal(data, &uuid); err == nil {
+		r.UUID, r.ResourceURI = uuid, ""
+		return nil
+	}
+	type alias RemoteSnapshotDriveReference
+	var v alias
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*r = RemoteSnapshotDriveReference(v)
+	return nil
+}
+
+// ErrRemoteSnapshotCreateRedirect indicates an unknown initial POST outcome.
+// Callers must reconcile before retrying.
+var ErrRemoteSnapshotCreateRedirect = errors.New("remote snapshot create redirect refused; outcome unknown")
 
 // RemoteSnapshotUpdateRequest represents a request to update a remote snapshot.
 type RemoteSnapshotUpdateRequest struct {
@@ -109,11 +165,33 @@ func (s *RemoteSnapshotsService) Create(ctx context.Context, createRequest *Remo
 	}
 
 	root := new(remoteSnapshotsRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrRemoteSnapshotCreateRedirect)
 	if err != nil {
 		return nil, resp, err
 	}
 
+	return root.RemoteSnapshots, resp, nil
+}
+
+// CreateDefinitions creates remote snapshots using the minimal writable contract.
+func (s *RemoteSnapshotsService) CreateDefinitions(ctx context.Context, createRequest *RemoteSnapshotCreateDefinitionsRequest) ([]RemoteSnapshot, *Response, error) {
+	if createRequest == nil {
+		return nil, nil, ErrEmptyPayloadNotAllowed
+	}
+	for _, object := range createRequest.Objects {
+		if object.Drive == nil || object.Drive.UUID == "" {
+			return nil, nil, errors.New("remote snapshot drive uuid is required")
+		}
+	}
+	req, err := s.client.NewRequest(http.MethodPost, remoteSnapshotsBasePath+"/", createRequest)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(remoteSnapshotsRoot)
+	resp, err := s.client.doResourceAction(ctx, req, root, ErrRemoteSnapshotCreateRedirect)
+	if err != nil {
+		return nil, resp, err
+	}
 	return root.RemoteSnapshots, resp, nil
 }
 
