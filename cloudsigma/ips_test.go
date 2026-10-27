@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -28,6 +29,30 @@ func TestIPs_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ips)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestIPs_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/ips/detail/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	ips, resp, err := client.IPs.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, ips)
+	assert.NotNil(t, resp)
+}
+
+func TestIPs_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	ips, resp, err := client.IPs.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, ips)
+	assert.Nil(t, resp)
 }
 
 func TestIPs_Get(t *testing.T) {
