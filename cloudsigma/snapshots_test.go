@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,6 +29,30 @@ func TestSnapshots_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, snapshots)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestSnapshots_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/snapshots/detail/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	snapshots, resp, err := client.Snapshots.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, snapshots)
+	assert.NotNil(t, resp)
+}
+
+func TestSnapshots_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	snapshots, resp, err := client.Snapshots.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, snapshots)
+	assert.Nil(t, resp)
 }
 
 func TestSnapshots_Get(t *testing.T) {
