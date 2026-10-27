@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -26,4 +27,31 @@ func TestCapabilities_Get(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, capabilities)
+}
+
+func TestCapabilities_GetHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/capabilities/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+
+	capabilities, resp, err := client.Capabilities.Get(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, capabilities)
+	assert.NotNil(t, resp)
+}
+
+func TestCapabilities_GetContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	capabilities, resp, err := client.Capabilities.Get(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, capabilities)
+	assert.Nil(t, resp)
 }
