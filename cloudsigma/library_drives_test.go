@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -28,6 +29,33 @@ func TestLibraryDrives_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drives)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestLibraryDrives_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/libdrives/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+
+	drives, resp, err := client.LibraryDrives.List(ctx, nil)
+	assert.Error(t, err)
+	assert.Nil(t, drives)
+	assert.NotNil(t, resp)
+}
+
+func TestLibraryDrives_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	drives, resp, err := client.LibraryDrives.List(canceled, nil)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, drives)
+	assert.Nil(t, resp)
 }
 
 func TestLibraryDrives_Get(t *testing.T) {
