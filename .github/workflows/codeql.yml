@@ -1,0 +1,76 @@
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: go
+            build-mode: manual
+          - language: actions
+            build-mode: none
+
+    env:
+      # CodeQL excludes Go test files unless this extractor option is enabled.
+      CODEQL_EXTRACTOR_GO_OPTION_EXTRACT_TESTS: "true"
+      # Include the repository's Linux-only audit test in the traced build.
+      GOFLAGS: "-tags=cloudsigma_guard_audit"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Validate Go CodeQL build scope
+        if: matrix.language == 'go'
+        run: tools/check-codeql-go-scope.sh
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+
+      - name: Build all SDK sources and tests
+        if: matrix.language == 'go'
+        shell: bash
+        run: |
+          set -euo pipefail
+          go build -a ./...
+          go test -a -c -tags cloudsigma_guard_audit \
+            -o "$RUNNER_TEMP/cloudsigma-sdk-go.test" ./cloudsigma
+          (cd tools && go build -a ./tools.go)
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
