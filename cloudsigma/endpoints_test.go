@@ -298,3 +298,43 @@ func TestEndpointFixtureCancellation(t *testing.T) {
 		}
 	}
 }
+
+func TestGuardTransportRejectsInvalidDestination(t *testing.T) {
+	c := NewClient(&endpointCredentials{})
+	calls := 0
+	transport := guardTransport{client: c, next: endpointTransport(func(r *http.Request) (*http.Response, error) {
+		calls++
+		return endpointReply(r, ""), nil
+	})}
+
+	bad, err := http.NewRequest(http.MethodGet, "https://evil.invalid/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = transport.RoundTrip(bad); err == nil {
+		t.Fatal("invalid destination was delegated")
+	}
+	if calls != 0 {
+		t.Fatalf("transport calls=%d", calls)
+	}
+}
+
+func TestGuardTransportDelegatesValidDestination(t *testing.T) {
+	c := NewClient(&endpointCredentials{})
+	calls := 0
+	transport := guardTransport{client: c, next: endpointTransport(func(r *http.Request) (*http.Response, error) {
+		calls++
+		return endpointReply(r, ""), nil
+	})}
+
+	req, err := c.NewRequest(http.MethodGet, "profile/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = transport.RoundTrip(req); err != nil {
+		t.Fatal(err)
+	}
+	if calls != 1 {
+		t.Fatalf("transport calls=%d", calls)
+	}
+}
