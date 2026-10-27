@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -25,4 +26,31 @@ func TestCloudStatus_Get(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, cloudStatus)
+}
+
+func TestCloudStatus_GetHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/cloud_status/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadGateway)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+
+	cloudStatus, resp, err := client.CloudStatus.Get(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, cloudStatus)
+	assert.NotNil(t, resp)
+}
+
+func TestCloudStatus_GetContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	cloudStatus, resp, err := client.CloudStatus.Get(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, cloudStatus)
+	assert.Nil(t, resp)
 }
