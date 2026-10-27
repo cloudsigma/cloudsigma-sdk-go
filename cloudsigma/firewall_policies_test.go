@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,6 +29,30 @@ func TestFirewallPolicies_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, policies)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestFirewallPolicies_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/fwpolicies/detail/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	policies, resp, err := client.FirewallPolicies.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, policies)
+	assert.NotNil(t, resp)
+}
+
+func TestFirewallPolicies_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	policies, resp, err := client.FirewallPolicies.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, policies)
+	assert.Nil(t, resp)
 }
 
 func TestFirewallPolicies_Get(t *testing.T) {
