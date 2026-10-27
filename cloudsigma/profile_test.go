@@ -85,3 +85,29 @@ func TestProfile_Update_emptyPayload(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
 }
+
+func TestProfile_UpdateHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/profile/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPut, r.Method)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	profile, resp, err := client.Profile.Update(ctx, &ProfileUpdateRequest{Profile: &Profile{Company: "test"}})
+	assert.Error(t, err)
+	assert.Nil(t, profile)
+	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
+func TestProfile_UpdateContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	profile, resp, err := client.Profile.Update(canceled, &ProfileUpdateRequest{Profile: &Profile{Company: "test"}})
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, profile)
+	assert.Nil(t, resp)
+}
