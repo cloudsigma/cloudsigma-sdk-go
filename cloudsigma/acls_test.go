@@ -44,6 +44,7 @@ func TestACLs_ListHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, acls)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestACLs_ListContextCancellation(t *testing.T) {

@@ -42,6 +42,7 @@ func TestSnapshots_ListHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, snapshots)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestSnapshots_ListContextCancellation(t *testing.T) {

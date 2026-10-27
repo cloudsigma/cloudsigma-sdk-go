@@ -42,6 +42,7 @@ func TestCapabilities_GetHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, capabilities)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestCapabilities_GetContextCancellation(t *testing.T) {
