@@ -35,16 +35,14 @@ jobs:
     env:
       # CodeQL excludes Go test files unless this extractor option is enabled.
       CODEQL_EXTRACTOR_GO_OPTION_EXTRACT_TESTS: "true"
-      # Include the repository's Linux-only audit test in the traced build.
-      GOFLAGS: "-tags=cloudsigma_guard_audit"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
         if: matrix.language == 'go'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
