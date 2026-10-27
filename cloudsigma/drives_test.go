@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,6 +30,33 @@ func TestDrives_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, drives)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestDrives_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/drives/detail/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+
+	drives, resp, err := client.Drives.List(ctx, nil)
+	assert.Error(t, err)
+	assert.Nil(t, drives)
+	assert.NotNil(t, resp)
+}
+
+func TestDrives_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	drives, resp, err := client.Drives.List(canceled, nil)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, drives)
+	assert.Nil(t, resp)
 }
 
 func TestDrives_Get(t *testing.T) {
