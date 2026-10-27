@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,6 +29,30 @@ func TestTags_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, tags)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestTags_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/tags/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	tags, resp, err := client.Tags.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, tags)
+	assert.NotNil(t, resp)
+}
+
+func TestTags_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	tags, resp, err := client.Tags.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, tags)
+	assert.Nil(t, resp)
 }
 
 func TestTags_Get(t *testing.T) {
