@@ -26,6 +26,14 @@ func (b *downloadBody) Close() error { b.closed++; return nil }
 type downloadWriter struct{}
 
 func (downloadWriter) Write([]byte) (int, error) { return 0, errors.New("writer") }
+
+func TestDownloadStatusError(t *testing.T) {
+	err := (&DownloadStatusError{StatusCode: http.StatusBadGateway}).Error()
+	if err != "download status 502" {
+		t.Fatalf("unexpected error: %q", err)
+	}
+}
+
 func TestDriveDownload(t *testing.T) {
 	for _, mode := range []string{"binary", "default-deny", "cross", "return", "http", "userinfo", "loop", "hops", "size", "truncated", "writer", "cancel", "contenttype", "encoding", "status", "host", "nilurl", "response-error"} {
 		t.Run(mode, func(t *testing.T) {
