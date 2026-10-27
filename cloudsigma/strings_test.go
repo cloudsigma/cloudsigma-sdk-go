@@ -52,6 +52,30 @@ func stringPointer(s string) *string {
 	return &s
 }
 
+func TestResourceStringMethods(t *testing.T) {
+	tests := []struct {
+		name string
+		got  string
+		want string
+	}{
+		{"ACL", (ACL{}).String(), Stringify(ACL{})},
+		{"Drive", (Drive{}).String(), Stringify(Drive{})},
+		{"FirewallPolicy", (FirewallPolicy{}).String(), Stringify(FirewallPolicy{})},
+		{"IP", (IP{}).String(), Stringify(IP{})},
+		{"Keypair", (Keypair{}).String(), Stringify(Keypair{})},
+		{"LibraryDrive", (LibraryDrive{}).String(), Stringify(LibraryDrive{})},
+		{"RemoteSnapshot", (RemoteSnapshot{}).String(), Stringify(RemoteSnapshot{})},
+		{"Snapshot", (Snapshot{}).String(), Stringify(Snapshot{})},
+		{"Tag", (Tag{}).String(), Stringify(Tag{})},
+		{"VLAN", (VLAN{}).String(), Stringify(VLAN{})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.got)
+		})
+	}
+}
+
 func intPointer(i int) *int {
 	return &i
 }
