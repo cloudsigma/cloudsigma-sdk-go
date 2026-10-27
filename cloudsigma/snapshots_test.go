@@ -124,6 +124,32 @@ func TestSnapshots_Create_emptyPayload(t *testing.T) {
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
 }
 
+func TestSnapshots_CreateHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/snapshots/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	snapshots, resp, err := client.Snapshots.Create(ctx, &SnapshotCreateRequest{Snapshots: []Snapshot{{Name: "test"}}})
+	assert.Error(t, err)
+	assert.Nil(t, snapshots)
+	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
+func TestSnapshots_CreateContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	snapshots, resp, err := client.Snapshots.Create(canceled, &SnapshotCreateRequest{Snapshots: []Snapshot{{Name: "test"}}})
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, snapshots)
+	assert.Nil(t, resp)
+}
+
 func TestSnapshots_Update(t *testing.T) {
 	setup()
 	defer teardown()
