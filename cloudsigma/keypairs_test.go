@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,6 +30,30 @@ func TestKeypairs_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, keypairs)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestKeypairs_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/keypairs/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	keypairs, resp, err := client.Keypairs.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, keypairs)
+	assert.NotNil(t, resp)
+}
+
+func TestKeypairs_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	keypairs, resp, err := client.Keypairs.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, keypairs)
+	assert.Nil(t, resp)
 }
 
 func TestKeypairs_Get(t *testing.T) {
