@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,6 +29,33 @@ func TestACLs_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, acls)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestACLs_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/acls/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+
+	acls, resp, err := client.ACLs.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, acls)
+	assert.NotNil(t, resp)
+}
+
+func TestACLs_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	acls, resp, err := client.ACLs.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, acls)
+	assert.Nil(t, resp)
 }
 
 func TestACLs_Get(t *testing.T) {
