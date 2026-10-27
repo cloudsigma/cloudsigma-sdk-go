@@ -33,6 +33,7 @@ func TestCloudStatus_GetHTTPError(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/cloud_status/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
 		w.WriteHeader(http.StatusBadGateway)
 		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
 	})

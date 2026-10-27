@@ -36,6 +36,7 @@ func TestLibraryDrives_ListHTTPError(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc("/libdrives/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
 	})
