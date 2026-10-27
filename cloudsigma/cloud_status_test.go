@@ -41,6 +41,7 @@ func TestCloudStatus_GetHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, cloudStatus)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusBadGateway, resp.StatusCode)
 }
 
 func TestCloudStatus_GetContextCancellation(t *testing.T) {

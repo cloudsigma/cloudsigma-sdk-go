@@ -42,6 +42,7 @@ func TestVLANs_ListHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, vlans)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestVLANs_ListContextCancellation(t *testing.T) {

@@ -43,6 +43,7 @@ func TestKeypairs_ListHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, keypairs)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestKeypairs_ListContextCancellation(t *testing.T) {

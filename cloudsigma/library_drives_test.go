@@ -44,6 +44,7 @@ func TestLibraryDrives_ListHTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, drives)
 	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
 func TestLibraryDrives_ListContextCancellation(t *testing.T) {
