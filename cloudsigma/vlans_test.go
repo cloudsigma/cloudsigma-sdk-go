@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,6 +29,30 @@ func TestVLANs_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, vlans)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestVLANs_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/vlans/detail/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	vlans, resp, err := client.VLANs.List(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, vlans)
+	assert.NotNil(t, resp)
+}
+
+func TestVLANs_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	vlans, resp, err := client.VLANs.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, vlans)
+	assert.Nil(t, resp)
 }
 
 func TestVLANs_Get(t *testing.T) {
