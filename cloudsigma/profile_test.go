@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,6 +27,30 @@ func TestProfile_Get(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, profile)
+}
+
+func TestProfile_GetHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/profile/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `{"error":"synthetic"}`)
+	})
+	profile, resp, err := client.Profile.Get(ctx)
+	assert.Error(t, err)
+	assert.Nil(t, profile)
+	assert.NotNil(t, resp)
+}
+
+func TestProfile_GetContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	profile, resp, err := client.Profile.Get(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, profile)
+	assert.Nil(t, resp)
 }
 
 func TestProfile_Update(t *testing.T) {
