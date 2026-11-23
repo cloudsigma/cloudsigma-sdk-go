@@ -152,6 +152,33 @@ func TestDriveDownloadInvalid(t *testing.T) {
 	}
 }
 
+func TestDriveDownloadRejectsSetupAndIdentityInputs(t *testing.T) {
+	valid := DownloadOptions{MaxBytes: 1, Timeout: time.Second, Transport: downloadWire(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid download input dispatched")
+		return nil, nil
+	})}
+	for _, tc := range []struct {
+		name   string
+		client *Client
+		ctx    context.Context
+		id     string
+		dst    io.Writer
+	}{
+		{"nil-context", NewClient(NewUsernamePasswordCredentialsProvider("synthetic", "synthetic")), nil, "11111111-1111-1111-1111-111111111111", io.Discard},
+		{"nil-destination", NewClient(NewUsernamePasswordCredentialsProvider("synthetic", "synthetic")), context.Background(), "11111111-1111-1111-1111-111111111111", nil},
+		{"invalid-uuid", NewClient(NewUsernamePasswordCredentialsProvider("synthetic", "synthetic")), context.Background(), "not-a-uuid", io.Discard},
+		{"invalid-endpoint", NewClient(NewUsernamePasswordCredentialsProvider("synthetic", "synthetic"), WithEndpoint("http://invalid.example/")), context.Background(), "11111111-1111-1111-1111-111111111111", io.Discard},
+		{"nonstandard-endpoint", NewClient(NewUsernamePasswordCredentialsProvider("synthetic", "synthetic"), WithEndpoint("https://example.invalid/api/2.0/")), context.Background(), "11111111-1111-1111-1111-111111111111", io.Discard},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := tc.client.Drives.Download(tc.ctx, tc.id, tc.dst, valid)
+			if err == nil {
+				t.Fatal("expected setup/identity refusal")
+			}
+		})
+	}
+}
+
 type downloadCancelReader struct{ cancel context.CancelFunc }
 
 func (r downloadCancelReader) Read(b []byte) (int, error) { r.cancel(); b[0] = 1; return 1, nil }
