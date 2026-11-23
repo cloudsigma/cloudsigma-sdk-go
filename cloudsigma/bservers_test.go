@@ -123,4 +123,13 @@ func TestBServersListRawErrors(t *testing.T) {
 	}
 }
 
+func TestBServersListRawEndpointSetupError(t *testing.T) {
+	client := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: &bserversListRawWire{t: t}}))
+
+	servers, resp, err := client.BServers.ListRaw(context.Background(), nil)
+	if servers != nil || resp != nil || err == nil {
+		t.Fatalf("expected endpoint setup error, got servers=%v response=%v error=%v", servers, resp, err)
+	}
+}
+
 var _ io.ReadCloser = (*bserversListRawBody)(nil)
