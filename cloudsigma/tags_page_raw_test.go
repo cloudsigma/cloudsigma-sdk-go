@@ -123,4 +123,13 @@ func TestTagsListRawErrors(t *testing.T) {
 	}
 }
 
+func TestTagsListRawEndpointSetupError(t *testing.T) {
+	w := &tagsListRawWire{t: t}
+	c := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: w}))
+	value, resp, err := c.Tags.ListRaw(context.Background(), nil)
+	if value != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got value=%v response=%v error=%v calls=%d", value, resp, err, w.calls)
+	}
+}
+
 var _ io.ReadCloser = (*tagsListRawBody)(nil)
