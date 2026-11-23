@@ -122,6 +122,16 @@ func TestSnapshotSummaryPageRawErrors(t *testing.T) {
 		t.Fatal("cancellation", e)
 	}
 }
+
+func TestSnapshotSummaryPageRawEndpointSetupError(t *testing.T) {
+	w := &snapshotPageWire{t: t}
+	c := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: w}))
+	value, resp, err := c.Snapshots.ListSummaryPageRaw(context.Background(), nil)
+	if value != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got value=%v response=%v error=%v calls=%d", value, resp, err, w.calls)
+	}
+}
+
 func TestSnapshotSummaryPageRawLegacy(t *testing.T) {
 	w := &snapshotPageWire{t: t, code: 200, body: `{"objects":[],"meta":{"limit":20}}`}
 	c := snapshotPageClient(w)
