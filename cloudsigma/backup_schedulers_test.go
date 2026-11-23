@@ -206,3 +206,12 @@ func TestBackupSchedulerListBoundaries(t *testing.T) {
 		})
 	}
 }
+
+func TestBackupSchedulerListEndpointSetupError(t *testing.T) {
+	w := &schedulerReadWire{t: t}
+	c := NewClient(NewTokenCredentialsProvider("synthetic"), WithEndpoint("http://invalid.example/"), WithHTTPClient(&http.Client{Transport: w}))
+	rows, resp, err := c.BackupSchedulers.List(context.Background(), nil)
+	if rows != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got rows=%v response=%v error=%v calls=%d", rows, resp, err, w.calls)
+	}
+}
