@@ -120,6 +120,23 @@ func TestKeypairRawProjection(t *testing.T) {
 		})
 	}
 }
+
+func TestKeypairRawUnmarshalMalformedObject(t *testing.T) {
+	original := KeypairRaw{"old": json.RawMessage(`true`)}
+	for _, input := range []string{
+		"", "   ", "[]", "null", "1", `"x"`,
+		"{", `{"broken":`, `{"a":1}x`,
+	} {
+		value := KeypairRaw{"old": json.RawMessage(`true`)}
+		if err := value.UnmarshalJSON([]byte(input)); err == nil || !reflect.DeepEqual(value, original) {
+			t.Fatalf("input=%q err=%v value=%v", input, err, value)
+		}
+	}
+	var decoded KeypairRaw
+	if err := json.Unmarshal([]byte(`[]`), &decoded); err == nil {
+		t.Fatal("encoding/json accepted a non-object response")
+	}
+}
 func mustKeypairJSON(v interface{}) string { b, _ := json.Marshal(v); return string(b) }
 
 func TestKeypairRawPagination(t *testing.T) {
