@@ -120,6 +120,55 @@ func TestFirewallPolicies_Create_emptyPayload(t *testing.T) {
 	assert.Equal(t, ErrEmptyPayloadNotAllowed.Error(), err.Error())
 }
 
+func TestFirewallPolicies_CreateHTTPError(t *testing.T) {
+	input := &FirewallPolicyCreateRequest{
+		FirewallPolicies: []FirewallPolicy{{Name: "synthetic policy"}},
+	}
+	for _, status := range []int{http.StatusForbidden, http.StatusNotFound, http.StatusConflict, http.StatusInternalServerError} {
+		t.Run(fmt.Sprintf("status-%d", status), func(t *testing.T) {
+			setup()
+			defer teardown()
+			mux.HandleFunc("/fwpolicies/", func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPost, r.Method)
+				assert.Equal(t, "/fwpolicies/", r.URL.Path)
+				w.WriteHeader(status)
+				_, _ = fmt.Fprint(w, `[{"error_type":"synthetic","error_message":"refused","error_point":"create"}]`)
+			})
+
+			policies, resp, err := client.FirewallPolicies.Create(ctx, input)
+			var apiErr *ErrorResponse
+			assert.ErrorAs(t, err, &apiErr)
+			assert.Nil(t, policies)
+			if assert.NotNil(t, resp) {
+				assert.Equal(t, status, resp.StatusCode)
+			}
+			if assert.NotNil(t, apiErr) {
+				assert.Same(t, resp, apiErr.Response)
+				assert.Len(t, apiErr.Errors, 1)
+				assert.Equal(t, "synthetic", apiErr.Errors[0].Type)
+				assert.Equal(t, "refused", apiErr.Errors[0].Message)
+				assert.Equal(t, "create", apiErr.Errors[0].Point)
+			}
+		})
+	}
+}
+
+func TestFirewallPolicies_CreateContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+
+	input := &FirewallPolicyCreateRequest{
+		FirewallPolicies: []FirewallPolicy{{Name: "synthetic policy"}},
+	}
+	policies, resp, err := client.FirewallPolicies.Create(canceled, input)
+
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, policies)
+	assert.Nil(t, resp)
+}
+
 func TestFirewallPolicies_Update(t *testing.T) {
 	setup()
 	defer teardown()
