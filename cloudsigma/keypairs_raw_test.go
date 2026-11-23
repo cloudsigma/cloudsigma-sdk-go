@@ -193,3 +193,15 @@ func TestKeypairRawErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestKeypairRawListEndpointSetupError(t *testing.T) {
+	client := NewClient(NewTokenCredentialsProvider("synthetic"), WithEndpoint("http://invalid.example/"), WithHTTPClient(&http.Client{Transport: keypairWire(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid endpoint dispatched")
+		return nil, nil
+	})}))
+
+	keypairs, resp, err := client.Keypairs.ListRaw(context.Background(), nil)
+	if keypairs != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" {
+		t.Fatalf("expected endpoint setup error, got keypairs=%v response=%v error=%v", keypairs, resp, err)
+	}
+}
