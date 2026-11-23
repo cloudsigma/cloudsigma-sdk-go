@@ -116,3 +116,15 @@ func TestDiscountErrors(t *testing.T) {
 		t.Fatal("cancel", e)
 	}
 }
+
+func TestDiscountListRawEndpointSetupError(t *testing.T) {
+	client := NewClient(NewTokenCredentialsProvider("synthetic"), WithEndpoint("http://invalid.example/"), WithHTTPClient(&http.Client{Transport: availabilityWire(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid endpoint dispatched")
+		return nil, nil
+	})}))
+
+	discounts, resp, err := client.Discount.ListRaw(context.Background(), nil)
+	if discounts != nil || resp != nil || err == nil {
+		t.Fatalf("expected endpoint setup error, got discounts=%v response=%v error=%v", discounts, resp, err)
+	}
+}
