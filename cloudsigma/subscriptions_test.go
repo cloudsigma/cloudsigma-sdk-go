@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,6 +30,44 @@ func TestSubscriptions_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, subscriptions)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestSubscriptions_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/subscriptions/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/subscriptions/", r.URL.Path)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `[{"error_type":"synthetic","error_message":"denied","error_point":"list"}]`)
+	})
+
+	subscriptions, resp, err := client.Subscriptions.List(ctx)
+	var apiErr *ErrorResponse
+	assert.ErrorAs(t, err, &apiErr)
+	assert.Nil(t, subscriptions)
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	}
+	if assert.NotNil(t, apiErr) {
+		assert.Same(t, resp, apiErr.Response)
+		assert.Len(t, apiErr.Errors, 1)
+		assert.Equal(t, "synthetic", apiErr.Errors[0].Type)
+		assert.Equal(t, "denied", apiErr.Errors[0].Message)
+		assert.Equal(t, "list", apiErr.Errors[0].Point)
+	}
+}
+
+func TestSubscriptions_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+
+	subscriptions, resp, err := client.Subscriptions.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, subscriptions)
+	assert.Nil(t, resp)
 }
 
 func TestSubscriptions_Create(t *testing.T) {
