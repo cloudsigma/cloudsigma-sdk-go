@@ -78,6 +78,23 @@ func TestClient_addOptions(t *testing.T) {
 	assert.Equal(t, "/servers/?limit=25&offset=5", pathWithOpts)
 }
 
+func TestClient_addOptionsErrors(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		path string
+		opts interface{}
+	}{
+		{"invalid URL", "%", &ListOptions{Limit: 1}},
+		{"unsupported options", "/servers/", 42},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := addOptions(tc.path, tc.opts)
+			assert.Error(t, err)
+			assert.Equal(t, tc.path, got)
+		})
+	}
+}
+
 func TestClient_Defaults(t *testing.T) {
 	client := NewClient(nil)
 
