@@ -88,3 +88,12 @@ func TestBServersDeleteErrors(t *testing.T) {
 		t.Fatal("context", e)
 	}
 }
+
+func TestBServersDeleteEndpointSetupError(t *testing.T) {
+	w := &bserverDeleteWire{t: t}
+	c := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: w}))
+	resp, err := c.BServers.Delete(context.Background(), "synthetic-server")
+	if resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got response=%v error=%v calls=%d", resp, err, w.calls)
+	}
+}
