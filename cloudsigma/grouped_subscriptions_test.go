@@ -114,3 +114,15 @@ func TestGroupedSubscriptionsErrors(t *testing.T) {
 		t.Fatal("cancel", e)
 	}
 }
+
+func TestGroupedSubscriptionsListRawEndpointSetupError(t *testing.T) {
+	client := NewClient(NewTokenCredentialsProvider("synthetic"), WithEndpoint("http://invalid.example/"), WithHTTPClient(&http.Client{Transport: availabilityWire(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid endpoint dispatched")
+		return nil, nil
+	})}))
+
+	grouped, resp, err := client.GroupedSubscriptions.ListRaw(context.Background(), nil)
+	if grouped != nil || resp != nil || err == nil {
+		t.Fatalf("expected endpoint setup error, got grouped=%v response=%v error=%v", grouped, resp, err)
+	}
+}
