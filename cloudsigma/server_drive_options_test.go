@@ -124,6 +124,15 @@ func TestDriveOptionsFailures(t *testing.T) {
 	}
 }
 
+func TestDriveOptionsEndpointSetupError(t *testing.T) {
+	w := &attachmentWire{t: t, want: `{"drives":[]}`}
+	c := NewClient(NewTokenCredentialsProvider("synthetic"), WithEndpoint("http://invalid.example/"), WithHTTPClient(&http.Client{Transport: w}))
+	server, resp, err := c.Servers.UpdateDriveOptions(context.Background(), "server", []ServerDriveOptions{})
+	if server != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got server=%v response=%v error=%v calls=%d", server, resp, err, w.calls)
+	}
+}
+
 func TestDriveOptionsInputSnapshot(t *testing.T) {
 	order := int64(0)
 	options := []ServerDriveOptions{{&order, "0:0", "virtio", "original"}}
