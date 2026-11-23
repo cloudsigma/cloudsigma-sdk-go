@@ -123,4 +123,13 @@ func TestBServersDetailRawErrors(t *testing.T) {
 	}
 }
 
+func TestBServersDetailRawEndpointSetupError(t *testing.T) {
+	w := &bserversDetailRawWire{t: t}
+	c := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: w}))
+	servers, resp, err := c.BServers.ListDetailRaw(context.Background(), nil)
+	if servers != nil || resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got servers=%v response=%v error=%v calls=%d", servers, resp, err, w.calls)
+	}
+}
+
 var _ io.ReadCloser = (*bserversDetailRawBody)(nil)
