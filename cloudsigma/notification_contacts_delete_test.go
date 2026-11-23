@@ -88,3 +88,12 @@ func TestNotificationContactsDeleteErrors(t *testing.T) {
 		t.Fatal("context", e)
 	}
 }
+
+func TestNotificationContactsDeleteEndpointSetupError(t *testing.T) {
+	w := &notificationContactDeleteWire{t: t}
+	c := sdk.NewClient(sdk.NewTokenCredentialsProvider("synthetic"), sdk.WithEndpoint("http://invalid.example/"), sdk.WithHTTPClient(&http.Client{Transport: w}))
+	resp, err := c.NotificationContacts.Delete(context.Background(), "synthetic-contact")
+	if resp != nil || err == nil || err.Error() != "API destination must be an absolute HTTPS URL without userinfo or fragment" || w.calls != 0 {
+		t.Fatalf("expected endpoint setup error without dispatch, got response=%v error=%v calls=%d", resp, err, w.calls)
+	}
+}
