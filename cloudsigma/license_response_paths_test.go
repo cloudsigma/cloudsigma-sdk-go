@@ -313,3 +313,42 @@ func TestLicenseWrapperRejectsInvalidNestedOccurrences(t *testing.T) {
 		})
 	}
 }
+
+func TestLicenseWrapperPreservesPreexistingNestedValues(t *testing.T) {
+	license := &License{Free: "old"}
+	drive := Drive{Licenses: []DriveLicense{{License: license}}}
+	gotDrive := driveResponse(drive)
+	if err := json.Unmarshal([]byte(`{"name":"updated"}`), &gotDrive); err != nil {
+		t.Fatal(err)
+	}
+	if gotDrive.Licenses[0].License != license || gotDrive.Licenses[0].License.Free != "old" {
+		t.Fatalf("nested license changed on absent field: %+v", gotDrive.Licenses[0].License)
+	}
+
+	library := LibraryDrive{Licenses: []DriveLicense{{License: license}}}
+	gotLibrary := libraryDriveResponse(library)
+	if err := json.Unmarshal([]byte(`{"name":"updated"}`), &gotLibrary); err != nil {
+		t.Fatal(err)
+	}
+	if gotLibrary.Licenses[0].License != license || gotLibrary.Licenses[0].License.Free != "old" {
+		t.Fatalf("library nested license changed on absent field: %+v", gotLibrary.Licenses[0].License)
+	}
+
+	serverDrive := ServerDrive{Drive: &Drive{Licenses: []DriveLicense{{License: license}}}}
+	gotServerDrive := serverDriveResponse(serverDrive)
+	if err := json.Unmarshal([]byte(`{"result":"updated"}`), &gotServerDrive); err != nil {
+		t.Fatal(err)
+	}
+	if gotServerDrive.Drive.Licenses[0].License != license || gotServerDrive.Drive.Licenses[0].License.Free != "old" {
+		t.Fatalf("server-drive nested license changed on absent field: %+v", gotServerDrive.Drive.Licenses[0].License)
+	}
+
+	server := Server{Drives: []ServerDrive{{Drive: &Drive{Licenses: []DriveLicense{{License: license}}}}}}
+	gotServer := serverResponse(server)
+	if err := json.Unmarshal([]byte(`{"result":"updated"}`), &gotServer); err != nil {
+		t.Fatal(err)
+	}
+	if gotServer.Drives[0].Drive.Licenses[0].License != license || gotServer.Drives[0].Drive.Licenses[0].License.Free != "old" {
+		t.Fatalf("server nested license changed on absent field: %+v", gotServer.Drives[0].Drive.Licenses[0].License)
+	}
+}
