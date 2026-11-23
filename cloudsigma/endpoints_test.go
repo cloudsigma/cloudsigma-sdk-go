@@ -338,3 +338,35 @@ func TestGuardTransportDelegatesValidDestination(t *testing.T) {
 		t.Fatalf("transport calls=%d", calls)
 	}
 }
+
+func TestValidateDestinationRejectsRequestShapes(t *testing.T) {
+	c := NewClient(&endpointCredentials{})
+	for _, tc := range []struct {
+		name string
+		req  *http.Request
+		want string
+	}{
+		{"nil-request", nil, "nil API request"},
+		{"foreign-origin", mustEndpointRequest("https://evil.invalid/"), "API request destination differs from configured origin"},
+		{"http-destination", mustEndpointRequest("http://zrh.cloudsigma.com/"), "API destination must be an absolute HTTPS URL without userinfo or fragment"},
+		{"host-override", func() *http.Request {
+			r := mustEndpointRequest("https://zrh.cloudsigma.com/")
+			r.Host = "evil.invalid"
+			return r
+		}(), "API request Host override differs from URL"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := c.validateDestination(tc.req); err == nil || err.Error() != tc.want {
+				t.Fatalf("error=%v want %q", err, tc.want)
+			}
+		})
+	}
+}
+
+func mustEndpointRequest(raw string) *http.Request {
+	req, err := http.NewRequest(http.MethodGet, raw, nil)
+	if err != nil {
+		panic(err)
+	}
+	return req
+}
