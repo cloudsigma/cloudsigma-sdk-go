@@ -1,6 +1,7 @@
 package cloudsigma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,6 +30,44 @@ func TestServers_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, servers)
 	assert.Equal(t, 1, resp.Meta.TotalCount)
+}
+
+func TestServers_ListHTTPError(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/servers/detail/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/servers/detail/", r.URL.Path)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(w, `[{"error_type":"synthetic","error_message":"denied","error_point":"list"}]`)
+	})
+
+	servers, resp, err := client.Servers.List(ctx)
+	var apiErr *ErrorResponse
+	assert.ErrorAs(t, err, &apiErr)
+	assert.Nil(t, servers)
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	}
+	if assert.NotNil(t, apiErr) {
+		assert.Same(t, resp, apiErr.Response)
+		assert.Len(t, apiErr.Errors, 1)
+		assert.Equal(t, "synthetic", apiErr.Errors[0].Type)
+		assert.Equal(t, "denied", apiErr.Errors[0].Message)
+		assert.Equal(t, "list", apiErr.Errors[0].Point)
+	}
+}
+
+func TestServers_ListContextCancellation(t *testing.T) {
+	setup()
+	defer teardown()
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+
+	servers, resp, err := client.Servers.List(canceled)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, servers)
+	assert.Nil(t, resp)
 }
 
 func TestServers_Get(t *testing.T) {
