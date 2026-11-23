@@ -55,3 +55,17 @@ func TestLicenses_ListContextCancellation(t *testing.T) {
 	assert.Nil(t, licenses)
 	assert.Nil(t, resp)
 }
+
+func TestLicenses_ListEmptyObjects(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/licenses/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[]}`)
+	})
+	licenses, resp, err := client.Licenses.List(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.NotNil(t, licenses)
+	assert.Empty(t, licenses)
+}

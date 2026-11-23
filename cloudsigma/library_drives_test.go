@@ -60,6 +60,20 @@ func TestLibraryDrives_ListContextCancellation(t *testing.T) {
 	assert.Nil(t, resp)
 }
 
+func TestLibraryDrives_ListEmptyObjects(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/libdrives/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[]}`)
+	})
+	drives, resp, err := client.LibraryDrives.List(ctx, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.NotNil(t, drives)
+	assert.Empty(t, drives)
+}
+
 func TestLibraryDrives_Get(t *testing.T) {
 	setup()
 	defer teardown()
