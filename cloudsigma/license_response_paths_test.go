@@ -293,3 +293,23 @@ func TestLicenseHTTPRejectsInvalidOccurrences(t *testing.T) {
 		t.Fatalf("expected failed response, got %+v, %v", got, err)
 	}
 }
+
+func TestLicenseWrapperRejectsInvalidNestedOccurrences(t *testing.T) {
+	tests := []struct {
+		name string
+		new  func() json.Unmarshaler
+		body string
+	}{
+		{"library-drive", func() json.Unmarshaler { return new(libraryDriveResponse) }, `{"licenses":[{"license":{"free":false}}]}`},
+		{"server-drive", func() json.Unmarshaler { return new(serverDriveResponse) }, `{"drive":{"licenses":[{"license":{"free":false}}]}}`},
+		{"server", func() json.Unmarshaler { return new(serverResponse) }, `{"drives":[{"drive":{"licenses":[{"license":{"free":false}}]}}]}`},
+		{"snapshot", func() json.Unmarshaler { return new(snapshotResponse) }, `{"drive":{"licenses":[{"license":{"free":false}}]}}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := json.Unmarshal([]byte(tt.body), tt.new()); err == nil {
+				t.Fatal("accepted invalid nested license quantity")
+			}
+		})
+	}
+}
