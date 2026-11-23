@@ -57,6 +57,20 @@ func TestSnapshots_ListContextCancellation(t *testing.T) {
 	assert.Nil(t, resp)
 }
 
+func TestSnapshots_ListEmptyObjects(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/snapshots/detail/", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		_, _ = fmt.Fprint(w, `{"objects":[]}`)
+	})
+	snapshots, resp, err := client.Snapshots.List(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.NotNil(t, snapshots)
+	assert.Empty(t, snapshots)
+}
+
 func TestSnapshots_Get(t *testing.T) {
 	setup()
 	defer teardown()
