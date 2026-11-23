@@ -195,3 +195,55 @@ func TestDriveDownloadMidstreamCancel(t *testing.T) {
 		t.Fatal(e, b.closed, dst.Len())
 	}
 }
+
+type fixedCountWriter struct{ count int }
+
+func (w fixedCountWriter) Write(p []byte) (int, error) { return w.count, nil }
+
+type invalidCountWriter struct{}
+
+func (invalidCountWriter) Write(p []byte) (int, error) { return len(p) + 1, nil }
+
+type emptyProgressReader struct{}
+
+func (emptyProgressReader) Read([]byte) (int, error) { return 0, nil }
+
+func TestCopyDownloadBoundaries(t *testing.T) {
+	base := func(body io.Reader, length int64) *http.Response {
+		return &http.Response{
+			StatusCode:    http.StatusOK,
+			Header:        http.Header{"Content-Type": []string{"application/octet-stream"}},
+			Body:          io.NopCloser(body),
+			ContentLength: length,
+		}
+	}
+
+	for _, tc := range []struct {
+		name  string
+		resp  *http.Response
+		dst   io.Writer
+		max   int64
+		want  int64
+		check func(error) bool
+	}{
+		{"known-length-short-read", base(strings.NewReader("12"), 3), io.Discard, 5, 2, func(err error) bool { return errors.Is(err, io.ErrUnexpectedEOF) }},
+		{"writer-error", base(strings.NewReader("abc"), -1), downloadWriter{}, 5, 0, func(err error) bool { return err != nil && err.Error() == "writer" }},
+		{"writer-short-write", base(strings.NewReader("abc"), -1), fixedCountWriter{count: 2}, 5, 2, func(err error) bool { return errors.Is(err, io.ErrShortWrite) }},
+		{"invalid-writer-count", base(strings.NewReader("abc"), -1), invalidCountWriter{}, 5, 0, func(err error) bool { return err != nil && err.Error() == "invalid writer count" }},
+		{"size-limit-content-length", base(strings.NewReader("abc"), 3), io.Discard, 2, 0, func(err error) bool { return err != nil && err.Error() == "download size limit" }},
+		{"size-limit-streaming", base(strings.NewReader("abc"), -1), io.Discard, 2, 2, func(err error) bool { return err != nil && err.Error() == "download size limit" }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			n, err := copyDownload(context.Background(), tc.dst, tc.resp, tc.max)
+			if n != tc.want || !tc.check(err) {
+				t.Fatalf("n=%d err=%v want n=%d", n, err, tc.want)
+			}
+			_ = tc.resp.Body.Close()
+		})
+	}
+
+	_, err := copyDownload(context.Background(), io.Discard, base(emptyProgressReader{}, -1), 1)
+	if !errors.Is(err, io.ErrNoProgress) {
+		t.Fatalf("empty progress error=%v", err)
+	}
+}
